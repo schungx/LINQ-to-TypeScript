@@ -58,6 +58,6 @@ class Enumerable<T>
 
 ```ToLookup``` and ```ToDictionary``` failed to compile because the ```Lookup``` and ```Dictionary``` types each contain a method called ```ToEnumerable``` returning an ```Enumerable<T>```, so this counts as a _wrapped_ form!
 
-Also, *using* ```Dictionary``` or ```Lookup``` inside a method implementation causes it to fail to compile as well.
+Also, **using** ```Dictionary```inside a method implementation causes it to fail to compile as well.
 
 I've changed some method implementations which originally used ```Dictionary``` as a collection to use a new ```Collection``` class (which does not include a ```ToEnumerable``` method) instead.
