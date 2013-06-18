@@ -1,6 +1,6 @@
 module LINQ
 {
-  // Types and interfaces
+	// Types and interfaces
 
 	export interface Generator<T> { (): T; }
 	export interface SimpleAction { (): void; }
@@ -37,7 +37,7 @@ module LINQ
 
 	// Cached functions
 
-	var _Functions =
+	var Functions =
 	{
 		Identity: x => x,
 		True: () => true,
@@ -256,7 +256,7 @@ module LINQ
 
 		constructor(compareSelector?: Transform<K, any>)
 		{
-			this.compareSelector = (!compareSelector) ? _Functions.Identity : compareSelector;
+			this.compareSelector = (!compareSelector) ? Functions.Identity : compareSelector;
 		}
 
 		AddRange(keys: K[]): void
@@ -339,7 +339,7 @@ module LINQ
 
 		constructor(compareSelector?: Transform<K, any>)
 		{
-			this.compareSelector = (!compareSelector) ? _Functions.Identity : compareSelector;
+			this.compareSelector = (!compareSelector) ? Functions.Identity : compareSelector;
 		}
 
 		Add(key: K, value?: V): void
@@ -454,7 +454,7 @@ module LINQ
 						}
 						return false;
 					} ,
-					_Functions.Blank);
+					Functions.Blank);
 			} );
 		}
 	}
@@ -484,16 +484,16 @@ module LINQ
 			return this.dictionary.ToEnumerable().Select(kvp => new Grouping(kvp.Key, kvp.Value));
 		}
 	}
-	/*************
+/********** BUG in TypeScript ***************
 	export function Choice<T>(v_args: T[]): Enumerable<T>;
 	export function Choice<T>(...v_args: T[]): Enumerable<T>
 	{
 		var args = (v_args[0] instanceof Array) ? v_args[0] : v_args;
 
 		return new Enumerable<T>(() => new IEnumerator<T>(
-			_Functions.Blank,
+			Functions.Blank,
 			function () { return this.Yield(args[Math.floor(Math.random() * args.length)]); } ,
-			_Functions.Blank));
+			Functions.Blank));
 	}
 
 	export function Cycle<T>(...v_args: T[]): Enumerable<T>
@@ -503,22 +503,22 @@ module LINQ
 		return new Enumerable<T>(() => {
 			var index = 0;
 			return new IEnumerator<T>(
-				_Functions.Blank,
+				Functions.Blank,
 				function ()
 				{
 					if (index >= args.length) index = 0;
 					return this.Yield(args[index++]);
 				} ,
-				_Functions.Blank);
+				Functions.Blank);
 		} );
 	}
-	**************/
+**************/
 	export function Empty<T>(): Enumerable<T>
 	{
 		return new Enumerable<T>(() => new IEnumerator<T>(
-			_Functions.Blank,
-			_Functions.False,
-			_Functions.Blank));
+			Functions.Blank,
+			Functions.False,
+			Functions.Blank));
 	}
 
 	function FromNull<T>(): Enumerable<T>
@@ -551,9 +551,9 @@ module LINQ
 		return new Enumerable<string>(() => {
 			var index = 0;
 			return new IEnumerator<string>(
-				_Functions.Blank,
+				Functions.Blank,
 				function () { return (index < obj.length) ? this.Yield(obj.charAt(index++)) : false; } ,
-				_Functions.Blank);
+				Functions.Blank);
 		} );
 	}
 
@@ -601,7 +601,7 @@ module LINQ
 				{
 					return (index < array.length) ? this.Yield(array[index++]) : false;
 				} ,
-				_Functions.Blank);
+				Functions.Blank);
 		} );
 	}
 
@@ -636,7 +636,7 @@ module LINQ
 							if (isFirst) isFirst = false; else enumerator.moveNext();
 							return (enumerator.atEnd()) ? false : this.Yield(enumerator.item());
 						} ,
-						_Functions.Blank);
+						Functions.Blank);
 				} );
 			}
 		}
@@ -671,7 +671,7 @@ module LINQ
 					var match = regex.exec(input);
 					return (match) ? this.Yield(match) : false;
 				} ,
-				_Functions.Blank);
+				Functions.Blank);
 		} );
 	}
 
@@ -700,9 +700,9 @@ module LINQ
 		if (num !== undefined && num !== null) return Repeat(obj).Take(num);
 
 		return new Enumerable<T>(() => new IEnumerator<T>(
-			_Functions.Blank,
+			Functions.Blank,
 			function () { return this.Yield(obj); } ,
-			_Functions.Blank));
+			Functions.Blank));
 	}
 
 	export function RepeatWithFinalize<T>(initializer: Generator<T>, finalizer?: Action<T>): Enumerable<T>
@@ -726,9 +726,9 @@ module LINQ
 		if (count !== undefined && count !== null) return Generate(func).Take(count);
 
 		return new Enumerable<T>(() => new IEnumerator<T>(
-			_Functions.Blank,
+			Functions.Blank,
 			function () { return this.Yield(func()); } ,
-			_Functions.Blank));
+			Functions.Blank));
 	}
 
 	export function ToInfinity(start?: number, step?: number): Enumerable<number>
@@ -741,7 +741,7 @@ module LINQ
 			return new IEnumerator<number>(
 				() => value = start - step,
 				function () { return this.Yield(value += step); } ,
-				_Functions.Blank);
+				Functions.Blank);
 		} );
 	}
 
@@ -755,19 +755,19 @@ module LINQ
 			return new IEnumerator<number>(
 				() => value = start + step,
 				function () { return this.Yield(value -= step); } ,
-				_Functions.Blank);
+				Functions.Blank);
 		} );
 	}
 
 	export function Unfold<V>(seed: V, func?: Transform<V, V>): Enumerable<V>
 	{
-		func = func || _Functions.Identity;
+		func = func || Functions.Identity;
 
 		return new Enumerable<V>(() => {
 			var isFirst = true;
 			var value : V;
 			return new IEnumerator<V>(
-				_Functions.Blank,
+				Functions.Blank,
 				function ()
 				{
 					if (isFirst) {
@@ -778,7 +778,7 @@ module LINQ
 					value = func(value);
 					return this.Yield(value);
 				} ,
-				_Functions.Blank);
+				Functions.Blank);
 		} );
 	}
 
@@ -824,8 +824,8 @@ module LINQ
 
 		CascadeBreadthFirst(func: Transform<any, any>, resultSelector?: TransformX<any, any>): Enumerable<any>
 		{
-			func = func || _Functions.Identity;
-			resultSelector = resultSelector || _Functions.Identity;
+			func = func || Functions.Identity;
+			resultSelector = resultSelector || Functions.Identity;
 
 			return new Enumerable<any>(() => {
 				var enumerator: IEnumerator<any>;
@@ -859,8 +859,8 @@ module LINQ
 
 		CascadeDepthFirst(func: Transform<any, any>, resultSelector?: TransformX<any, any>): Enumerable<any>
 		{
-			func = func || _Functions.Identity;
-			resultSelector = resultSelector || _Functions.Identity;
+			func = func || Functions.Identity;
+			resultSelector = resultSelector || Functions.Identity;
 
 			return new Enumerable<any>(() => {
 				var enumeratorStack: IEnumerator<any>[] = [];
@@ -911,7 +911,7 @@ module LINQ
 									Utils.Dispose(middleEnumerator);
 									middleEnumerator =
 									From(enumerator.Current())
-										.SelectMany(_Functions.Identity)
+										.SelectMany(Functions.Identity)
 										.Flatten()
 										.GetEnumerator();
 									continue;
@@ -1010,7 +1010,7 @@ module LINQ
 		SelectMany<V>(collectionSelector: TransformX<T, Object>, resultSelector: DualTransform<T, KeyValuePair<string, any>, V>): Enumerable<V>;
 		SelectMany<V>(collectionSelector?: TransformX<T, any>, resultSelector?: DualTransform<T, any, V>): Enumerable<V>
 		{
-			collectionSelector = collectionSelector || _Functions.Identity;
+			collectionSelector = collectionSelector || Functions.Identity;
 			if (!resultSelector) resultSelector = (a, b) => b;
 
 			return new Enumerable<V>(() => {
@@ -1101,7 +1101,7 @@ module LINQ
 				return new IEnumerator<V>(
 					() => {
 						outerEnumerator = this.GetEnumerator();
-						lookup = FromEnumerable(inner).ToLookup(innerKeySelector, _Functions.Identity, compareSelector);
+						lookup = FromEnumerable(inner).ToLookup(innerKeySelector, Functions.Identity, compareSelector);
 					} ,
 					function ()
 					{
@@ -1118,7 +1118,7 @@ module LINQ
 
 							if (outerEnumerator.MoveNext()) {
 								var key = outerKeySelector(outerEnumerator.Current());
-								innerElements = <U[]><any> lookup.Get(key).ToArray();	// BUG: Shouldn't need cast, wrongly deduced to be T[]
+								innerElements = <U[]><any> lookup.Get(key).ToArray();	// BUG in TypeScript: Shouldn't need cast, wrongly deduced to be T[]
 							} else {
 								return false;
 							}
@@ -1137,7 +1137,7 @@ module LINQ
 				return new IEnumerator<V>(
 					() => {
 						enumerator = this.GetEnumerator();
-						lookup = FromEnumerable(inner).ToLookup(innerKeySelector, _Functions.Identity, compareSelector);
+						lookup = FromEnumerable(inner).ToLookup(innerKeySelector, Functions.Identity, compareSelector);
 					} ,
 					function ()
 					{
@@ -1263,7 +1263,7 @@ module LINQ
 
 		Contains<V>(value: V, compareSelector: Transform<T, V>): boolean
 		{
-			compareSelector = compareSelector || _Functions.Identity;
+			compareSelector = compareSelector || Functions.Identity;
 			var enumerator = this.GetEnumerator();
 			try {
 				while (enumerator.MoveNext()) {
@@ -1307,7 +1307,7 @@ module LINQ
 		Except(second: T[], compareSelector?: Transform<T, any>): Enumerable<T>;
 		Except(second: any, compareSelector?: Transform<T, any>): Enumerable<T>
 		{
-			compareSelector = compareSelector || _Functions.Identity;
+			compareSelector = compareSelector || Functions.Identity;
 
 			return new Enumerable<T>(() => {
 				var enumerator: IEnumerator<T>;
@@ -1338,7 +1338,7 @@ module LINQ
 		Intersect(second: T[], compareSelector?: Transform<T, any>): Enumerable<T>;
 		Intersect(second: any, compareSelector?: Transform<T, any>): Enumerable<T>
 		{
-			compareSelector = compareSelector || _Functions.Identity;
+			compareSelector = compareSelector || Functions.Identity;
 
 			return new Enumerable<T>(() => {
 				var enumerator: IEnumerator<T>;
@@ -1372,7 +1372,7 @@ module LINQ
 		SequenceEqual(second: T[], compareSelector?: Transform<T, any>): boolean;
 		SequenceEqual(second: any, compareSelector?: Transform<T, any>): boolean
 		{
-			compareSelector = compareSelector || _Functions.Identity;
+			compareSelector = compareSelector || Functions.Identity;
 
 			var firstEnumerator = this.GetEnumerator();
 			try {
@@ -1398,7 +1398,7 @@ module LINQ
 		Union(second: T[], compareSelector?: Transform<T, any>): Enumerable<T>;
 		Union(second: any, compareSelector?: Transform<T, any>): Enumerable<T>
 		{
-			compareSelector = compareSelector || _Functions.Identity;
+			compareSelector = compareSelector || Functions.Identity;
 
 			return new Enumerable<T>(() => {
 				var firstEnumerator: IEnumerator<T>;
@@ -1448,7 +1448,7 @@ module LINQ
 						index = buffer.length;
 					} ,
 					function () { return (index > 0) ? this.Yield(buffer[--index]) : false; } ,
-					_Functions.Blank);
+					Functions.Blank);
 			} );
 		}
 
@@ -1467,19 +1467,19 @@ module LINQ
 						}
 						return false;
 					} ,
-					_Functions.Blank);
+					Functions.Blank);
 			} );
 		}
 
 		// Grouping Methods
 
-	//BUG*************GroupBy<K>(keySelector: Transform<T, K>): Enumerable<Grouping<K, T>>;
+//BUG in TypeScript*************GroupBy<K>(keySelector: Transform<T, K>): Enumerable<Grouping<K, T>>;
 		GroupBy<K, U, V>(keySelector: Transform<T, K>, elementSelector: Transform<T, V>): Enumerable<Grouping<K, V>>;
 		GroupBy<K, U, V>(keySelector: Transform<T, K>, elementSelector: Transform<T, U>, resultSelector: (key: K, group: Grouping<K, U>) => V, compareSelector?: Transform<K, any>): Enumerable<V>;
 		GroupBy<K, U, V>(keySelector: Transform<T, K>, elementSelector?: Transform<T, U>, resultSelector?: (key: K, group: Grouping<K, U>) => V, compareSelector?: Transform<K, any>): Enumerable<V>
 		{
-			elementSelector = elementSelector || _Functions.Identity;
-			compareSelector = compareSelector || _Functions.Identity;
+			elementSelector = elementSelector || Functions.Identity;
+			compareSelector = compareSelector || Functions.Identity;
 
 			return new Enumerable<V>(() => {
 				var enumerator: IEnumerator<Grouping<K, U>>;
@@ -1504,8 +1504,8 @@ module LINQ
 		PartitionBy<K, U, V>(keySelector: Transform<T, K>, elementSelector: Transform<T, U>, resultSelector: (key: K, group: U[]) => V, compareSelector?: Transform<K, any>): Enumerable<V>;
 		PartitionBy<K, U, V>(keySelector: Transform<T, K>, elementSelector?: Transform<T, U>, resultSelector?: (key: K, group: U[]) => V, compareSelector?: Transform<K, any>): Enumerable<V>
 		{
-			elementSelector = elementSelector || _Functions.Identity;
-			compareSelector = compareSelector || _Functions.Identity;
+			elementSelector = elementSelector || Functions.Identity;
+			compareSelector = compareSelector || Functions.Identity;
 			if (!resultSelector) resultSelector = (key: K, group: U[]) => new Grouping(key, group);
 
 			return new Enumerable<V>(() => {
@@ -1552,8 +1552,7 @@ module LINQ
 					() => Utils.Dispose(enumerator));
 			} );
 		}
-
-	/**********
+/********** BUG in TypeScript ***********
 		BufferWithCount(count: number): Enumerable<T[]>
 		{
 			return new Enumerable<T[]>(() => {
@@ -1575,7 +1574,7 @@ module LINQ
 					() => Utils.Dispose(enumerator));
 			} );
 		}
-	*********/
+*********/
 		// Aggregate Methods
 
 		Aggregate<V>(func: PreviousCurrentTransform<V, T, V>): V;
@@ -1589,7 +1588,7 @@ module LINQ
 
 		Average(selector?: NumericTransform<T>): number
 		{
-			selector = selector || _Functions.Identity;
+			selector = selector || Functions.Identity;
 
 			var sum = 0;
 			var count = 0;
@@ -1603,7 +1602,7 @@ module LINQ
 
 		Count(predicate?: PredicateX<T>): number
 		{
-			predicate = predicate || _Functions.True;
+			predicate = predicate || Functions.True;
 
 			var count = 0;
 			this.ForEach((x, i) => {
@@ -1614,13 +1613,13 @@ module LINQ
 
 		Max(selector?: NumericTransform<T>): number
 		{
-			selector = selector || _Functions.Identity;
+			selector = selector || Functions.Identity;
 			return this.Select(selector).Aggregate((a: number, b: number) => (a > b) ? a : b);
 		}
 
 		Min(selector?: NumericTransform<T>): number
 		{
-			selector = selector || _Functions.Identity;
+			selector = selector || Functions.Identity;
 			return this.Select(selector).Aggregate((a: number, b: number) => (a < b) ? a : b);
 		}
 
@@ -1636,7 +1635,7 @@ module LINQ
 
 		Sum(selector?: NumericTransform<T>): number
 		{
-			selector = selector || _Functions.Identity;
+			selector = selector || Functions.Identity;
 			return this.Select(selector).Aggregate(0, (a: number, b: number) => a + b);
 		}
 
@@ -1927,12 +1926,12 @@ module LINQ
 		}
 
 
-	//BUG**************	ToLookup<K, V>(keySelector: Transform<T, K>): Lookup<K, T>;
+//BUG in TypeScript**************	ToLookup<K, V>(keySelector: Transform<T, K>): Lookup<K, T>;
 		ToLookup<K, V>(keySelector: Transform<T, K>, elementSelector: Transform<T, V>, compareSelector?: Transform<K, any>): Lookup<K, V>;
 		ToLookup<K, V>(keySelector: Transform<T, K>, elementSelector?: Transform<T, V>, compareSelector?: Transform<K, any>): Lookup<K, any>
 		{
-			elementSelector = elementSelector || _Functions.Identity;
-			compareSelector = compareSelector || _Functions.Identity;
+			elementSelector = elementSelector || Functions.Identity;
+			compareSelector = compareSelector || Functions.Identity;
 
 			var dict = new Dictionary<K, V[]>(compareSelector);
 			this.ForEach(x => {
@@ -1953,12 +1952,12 @@ module LINQ
 			return obj;
 		}
 
-	//BUG*****************	ToDictionary<K>(keySelector: Transform<T, K>): Dictionary<K, T>;
+//BUG in TypeScript*****************	ToDictionary<K>(keySelector: Transform<T, K>): Dictionary<K, T>;
 		ToDictionary<K, V>(keySelector: Transform<T, K>, elementSelector: Transform<T, V>, compareSelector?: Transform<K, any>): Dictionary<K, V>;
 		ToDictionary<K, V>(keySelector: Transform<T, K>, elementSelector?: Transform<T, V>, compareSelector?: Transform<K, any>): Dictionary<K, any>
 		{
-			elementSelector = elementSelector || _Functions.Identity;
-			compareSelector = compareSelector || _Functions.Identity;
+			elementSelector = elementSelector || Functions.Identity;
+			compareSelector = compareSelector || Functions.Identity;
 
 			var dict = new Dictionary<K, V>(compareSelector);
 			this.ForEach(x => dict.Add(keySelector(x), elementSelector(x)));
@@ -1977,7 +1976,7 @@ module LINQ
 		ToString(separator?: string, selector?: Transform<T, any>): string
 		{
 			if (!separator) separator = "";
-			selector = selector || _Functions.Identity;
+			selector = selector || Functions.Identity;
 
 			return this.Select(selector).ToArray().join(separator);
 		}
@@ -2024,7 +2023,7 @@ module LINQ
 		Write(separator?: string, selector?: Transform<T, any>): void
 		{
 			if (!separator) separator = "";
-			selector = selector || _Functions.Identity;
+			selector = selector || Functions.Identity;
 
 			var isFirst = true;
 			this.ForEach(item => {
@@ -2036,7 +2035,7 @@ module LINQ
 
 		WriteLine(selector?: Transform<T, any>): void
 		{
-			selector = selector || _Functions.Identity;
+			selector = selector || Functions.Identity;
 
 			this.ForEach(item => {
 				document.write(selector(item));
@@ -2080,7 +2079,7 @@ module LINQ
 						{
 							return sharedEnumerator.MoveNext() ? this.Yield(sharedEnumerator.Current()) : false;
 						},
-						_Functions.Blank));
+						Functions.Blank));
 		}
 
 		MemoizeAll(): Enumerable<T>
@@ -2106,7 +2105,7 @@ module LINQ
 							}
 							return this.Yield(cache[index]);
 						},
-						_Functions.Blank
+						Functions.Blank
 				);
 			});
 		}
@@ -2156,7 +2155,7 @@ module LINQ
 		Trace(message?: string, selector?: Transform<T, any>): Enumerable<T>
 		{
 			if (message === undefined || message === null) message = "Trace";
-			selector = selector || _Functions.Identity;
+			selector = selector || Functions.Identity;
 
 			return this.Do(item => console.log(message, ":", selector(item)));
 		}
@@ -2239,7 +2238,7 @@ module LINQ
 						indexes.sort((a, b) => sortContext.Compare(a, b));
 					} ,
 					function () { return (index < indexes.length) ? this.Yield(buffer[indexes[index++]]) : false; } ,
-					_Functions.Blank
+					Functions.Blank
 					);
 			}
 		}
@@ -2275,7 +2274,7 @@ module LINQ
 				var index = 0;
 
 				return new IEnumerator<T>(
-						_Functions.Blank,
+						Functions.Blank,
 						function ()
 						{
 							while (index < source.length) {
@@ -2283,7 +2282,7 @@ module LINQ
 							}
 							return false;
 						},
-						_Functions.Blank);
+						Functions.Blank);
 			};
 		}
 		Any(predicate?: Predicate<T>): boolean
@@ -2334,7 +2333,7 @@ module LINQ
 							}
 							return false;
 						},
-						_Functions.Blank);
+						Functions.Blank);
 			});
 		}
 		TakeExceptLast(count?: number): Enumerable<T>
@@ -2356,7 +2355,7 @@ module LINQ
 				return new IEnumerator<T>(
 						() => index = source.length,
 						function () { return (index > 0) ? this.Yield(source[--index]) : false; },
-						_Functions.Blank)
+						Functions.Blank)
 			});
 		}
 		SequenceEqual(second: Enumerable<T>, compareSelector?: Transform<T, any>): boolean;
