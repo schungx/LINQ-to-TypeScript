@@ -7,9 +7,11 @@ This project is a translation of the LINQ.js project (LINQ implementation for Ja
 Files
 -----
 
-- linq.ts    ==> Main implementation
-- linq.js    ==> Compiled JavaScript
-- linq.d.ts  ==> Type definitions file to shorten compile time
+- linq.ts     ==> Main implementation
+- linq.d.ts   ==> Type definitions file to shorten compile time
+
+- linq.js     ==> Compiled JavaScript
+- linq.min.js ==> Compiled JavaScript minified
 
 
 Usage Example
@@ -20,7 +22,7 @@ Note: Only TypeScript version 0.9+ (with generics support) can be used.
 _In main.html:_
 
 ```
-<script type="text/javascript" src="lib/linq.js"></script>
+<script type="text/javascript" src="lib/linq.min.js"></script>
 <script type="text/javascript" src="lib/main.js"></script>
 ```
 
