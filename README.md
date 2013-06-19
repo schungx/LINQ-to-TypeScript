@@ -50,7 +50,7 @@ As a result, some functions cannot be formulated.  For example:
 class Enumerable<T>
 {
   GroupBy<K>(keySelector: Transform<T, K>): Enumerable<Grouping<K, T>>;
-	BufferWithCount(count: number): Enumerable<T[]>
+  BufferWithCount(count: number): Enumerable<T[]>
   ToLookup<K, V>(keySelector: Transform<T, K>): Lookup<K, T>;
   ToDictionary<K>(keySelector: Transform<T, K>): Dictionary<K, T>;
 }
