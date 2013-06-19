@@ -15,6 +15,8 @@ Files
 Usage Example
 -------------
 
+Note: Only TypeScript version 0.9+ (with generics support) can be used.
+
 _In main.html:_
 
 ```
