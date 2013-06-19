@@ -1,4 +1,16 @@
-var __extends = this.__extends || function (d, b) {
+/*--------------------------------------------------------------------------
+* linq.ts - LINQ for JavaScript in TypeScript
+*   Based on linq.js ver 2.2.0.0 (Jun. 28th, 2010)
+*   created and maintained by neuecc <ils@neue.cc>
+*   licensed under Microsoft Public License(Ms-PL)
+*   http://neue.cc/
+*   http://linqjs.codeplex.com/
+*
+* Converted by Stephen Chung (Stephen.Chung@intexact.com) to TyepScript
+* June 2013
+*--------------------------------------------------------------------------*/
+var __extends = this.__extends || function (d, b)
+{
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -6,7 +18,8 @@ var __extends = this.__extends || function (d, b) {
 };
 var LINQ;
 (function (LINQ) {
-    var _Functions = {
+    // Cached functions
+    var Functions = {
         Identity: function (x) {
             return x;
         },
@@ -23,6 +36,7 @@ var LINQ;
         }
     };
 
+    // Type strings
     var Types = {
         Boolean: typeof true,
         Number: typeof 0,
@@ -33,6 +47,7 @@ var LINQ;
         }
     };
 
+    // Enumerator states
     var States;
     (function (States) {
         States[States["Before"] = 0] = "Before";
@@ -41,6 +56,7 @@ var LINQ;
         States[States["After"] = 2] = "After";
     })(States || (States = {}));
 
+    // for tryGetNext
     var Yielder = (function () {
         function Yielder() {
             this.current = null;
@@ -57,6 +73,7 @@ var LINQ;
     })();
     LINQ.Yielder = Yielder;
 
+    // Name "Enumerator" conflicts with JScript's "Enumerator"
     var IEnumerator = (function () {
         function IEnumerator(initialize, tryGetNext, dispose) {
             this.yielder = new Yielder();
@@ -105,6 +122,7 @@ var LINQ;
     })();
     LINQ.IEnumerator = IEnumerator;
 
+    // Utility functions
     var Utils;
     (function (Utils) {
         function IsIEnumerable(obj) {
@@ -141,12 +159,13 @@ var LINQ;
             if (obj === undefined)
                 return "undefined";
 
-            if (typeof obj === "number") {
+            if (typeof obj === Types.Number) {
                 var num = Math.floor((obj) % 10000);
                 return num.toString();
             }
 
-            if (typeof obj === "string") {
+            if (typeof obj === Types.String) {
+                // Java's hash function
                 var str = obj;
                 var hash = 0;
 
@@ -209,12 +228,13 @@ var LINQ;
         return LinkedList;
     })();
 
+    // Collection
     var Collection = (function () {
         function Collection(compareSelector) {
             this.count = 0;
             this.linkedList = new LinkedList();
             this.buckets = {};
-            this.compareSelector = (!compareSelector) ? _Functions.Identity : compareSelector;
+            this.compareSelector = (!compareSelector) ? Functions.Identity : compareSelector;
         }
         Collection.prototype.AddRange = function (keys) {
             for (var i = 0; i < keys.length; i++)
@@ -289,12 +309,13 @@ var LINQ;
     })();
     LINQ.Collection = Collection;
 
+    // Dictionary
     var Dictionary = (function () {
         function Dictionary(compareSelector) {
             this.count = 0;
             this.linkedList = new LinkedList();
             this.buckets = {};
-            this.compareSelector = (!compareSelector) ? _Functions.Identity : compareSelector;
+            this.compareSelector = (!compareSelector) ? Functions.Identity : compareSelector;
         }
         Dictionary.prototype.Add = function (key, value) {
             var compareKey = this.compareSelector(key);
@@ -408,13 +429,14 @@ var LINQ;
                         return this.Yield(result);
                     }
                     return false;
-                }, _Functions.Blank);
+                }, Functions.Blank);
             });
         };
         return Dictionary;
     })();
     LINQ.Dictionary = Dictionary;
 
+    // Lookup
     var Lookup = (function () {
         function Lookup(dictionary) {
             this.dictionary = dictionary;
@@ -440,9 +462,44 @@ var LINQ;
     })();
     LINQ.Lookup = Lookup;
 
+    function Choice() {
+        var v_args = [];
+        for (var _i = 0; _i < (arguments.length - 0); _i++) {
+            v_args[_i] = arguments[_i + 0];
+        }
+        var _this = this;
+        var args = (v_args[0] instanceof Array) ? (v_args[0]) : (v_args);
+
+        return new Enumerable(function () {
+            return new IEnumerator(Functions.Blank, function () {
+                return this.Yield(args[Math.floor(Math.random() * args.length)]);
+            }, Functions.Blank);
+        });
+    }
+    LINQ.Choice = Choice;
+
+    function Cycle() {
+        var v_args = [];
+        for (var _i = 0; _i < (arguments.length - 0); _i++) {
+            v_args[_i] = arguments[_i + 0];
+        }
+        var _this = this;
+        var args = (v_args[0] instanceof Array) ? (v_args[0]) : (v_args);
+
+        return new Enumerable(function () {
+            var index = 0;
+            return new IEnumerator(Functions.Blank, function () {
+                if (index >= args.length)
+                    index = 0;
+                return this.Yield(args[index++]);
+            }, Functions.Blank);
+        });
+    }
+    LINQ.Cycle = Cycle;
+
     function Empty() {
         return new Enumerable(function () {
-            return new IEnumerator(_Functions.Blank, _Functions.False, _Functions.Blank);
+            return new IEnumerator(Functions.Blank, Functions.False, Functions.Blank);
         });
     }
     LINQ.Empty = Empty;
@@ -476,9 +533,9 @@ var LINQ;
 
         return new Enumerable(function () {
             var index = 0;
-            return new IEnumerator(_Functions.Blank, function () {
+            return new IEnumerator(Functions.Blank, function () {
                 return (index < obj.length) ? this.Yield(obj.charAt(index++)) : false;
-            }, _Functions.Blank);
+            }, Functions.Blank);
         });
     }
 
@@ -521,7 +578,7 @@ var LINQ;
                 }
             }, function () {
                 return (index < array.length) ? this.Yield(array[index++]) : false;
-            }, _Functions.Blank);
+            }, Functions.Blank);
         });
     }
 
@@ -552,11 +609,12 @@ var LINQ;
                             isFirst = false; else
                             enumerator.moveNext();
                         return (enumerator.atEnd()) ? false : this.Yield(enumerator.item());
-                    }, _Functions.Blank);
+                    }, Functions.Blank);
                 });
             }
         }
 
+        // function/object : Create KeyValuePair[]
         return FromObject(obj);
     }
     LINQ.From = From;
@@ -585,7 +643,7 @@ var LINQ;
             }, function () {
                 var match = regex.exec(input);
                 return (match) ? this.Yield(match) : false;
-            }, _Functions.Blank);
+            }, Functions.Blank);
         });
     }
     LINQ.Matches = Matches;
@@ -621,9 +679,9 @@ var LINQ;
             return Repeat(obj).Take(num);
 
         return new Enumerable(function () {
-            return new IEnumerator(_Functions.Blank, function () {
+            return new IEnumerator(Functions.Blank, function () {
                 return this.Yield(obj);
-            }, _Functions.Blank);
+            }, Functions.Blank);
         });
     }
     LINQ.Repeat = Repeat;
@@ -652,9 +710,9 @@ var LINQ;
             return Generate(func).Take(count);
 
         return new Enumerable(function () {
-            return new IEnumerator(_Functions.Blank, function () {
+            return new IEnumerator(Functions.Blank, function () {
                 return this.Yield(func());
-            }, _Functions.Blank);
+            }, Functions.Blank);
         });
     }
     LINQ.Generate = Generate;
@@ -672,7 +730,7 @@ var LINQ;
                 return value = start - step;
             }, function () {
                 return this.Yield(value += step);
-            }, _Functions.Blank);
+            }, Functions.Blank);
         });
     }
     LINQ.ToInfinity = ToInfinity;
@@ -690,19 +748,19 @@ var LINQ;
                 return value = start + step;
             }, function () {
                 return this.Yield(value -= step);
-            }, _Functions.Blank);
+            }, Functions.Blank);
         });
     }
     LINQ.ToNegativeInfinity = ToNegativeInfinity;
 
     function Unfold(seed, func) {
         var _this = this;
-        func = func || _Functions.Identity;
+        func = func || Functions.Identity;
 
         return new Enumerable(function () {
             var isFirst = true;
             var value;
-            return new IEnumerator(_Functions.Blank, function () {
+            return new IEnumerator(Functions.Blank, function () {
                 if (isFirst) {
                     isFirst = false;
                     value = seed;
@@ -710,7 +768,7 @@ var LINQ;
                 }
                 value = func(value);
                 return this.Yield(value);
-            }, _Functions.Blank);
+            }, Functions.Blank);
         });
     }
     LINQ.Unfold = Unfold;
@@ -719,6 +777,7 @@ var LINQ;
         function Enumerable(getEnumerator) {
             this.GetEnumerator = getEnumerator;
         }
+        // Type Filtering Methods
         Enumerable.prototype.OfType = function (type) {
             var typeName;
             switch (type) {
@@ -745,6 +804,7 @@ var LINQ;
             });
         };
 
+        // Ordering Methods
         Enumerable.prototype.OrderBy = function (keySelector) {
             return new OrderedEnumerable(this, keySelector, false);
         };
@@ -753,10 +813,11 @@ var LINQ;
             return new OrderedEnumerable(this, keySelector, true);
         };
 
+        // Projection and Filtering Methods
         Enumerable.prototype.CascadeBreadthFirst = function (func, resultSelector) {
             var _this = this;
-            func = func || _Functions.Identity;
-            resultSelector = resultSelector || _Functions.Identity;
+            func = func || Functions.Identity;
+            resultSelector = resultSelector || Functions.Identity;
 
             return new Enumerable(function () {
                 var enumerator;
@@ -790,8 +851,8 @@ var LINQ;
 
         Enumerable.prototype.CascadeDepthFirst = function (func, resultSelector) {
             var _this = this;
-            func = func || _Functions.Identity;
-            resultSelector = resultSelector || _Functions.Identity;
+            func = func || Functions.Identity;
+            resultSelector = resultSelector || Functions.Identity;
 
             return new Enumerable(function () {
                 var enumeratorStack = [];
@@ -846,7 +907,7 @@ var LINQ;
                         if (enumerator.MoveNext()) {
                             if (enumerator.Current() instanceof Array) {
                                 Utils.Dispose(middleEnumerator);
-                                middleEnumerator = From(enumerator.Current()).SelectMany(_Functions.Identity).Flatten().GetEnumerator();
+                                middleEnumerator = From(enumerator.Current()).SelectMany(Functions.Identity).Flatten().GetEnumerator();
                                 continue;
                             } else {
                                 return this.Yield(enumerator.Current());
@@ -933,7 +994,7 @@ var LINQ;
 
         Enumerable.prototype.SelectMany = function (collectionSelector, resultSelector) {
             var _this = this;
-            collectionSelector = collectionSelector || _Functions.Identity;
+            collectionSelector = collectionSelector || Functions.Identity;
             if (!resultSelector)
                 resultSelector = function (a, b) {
                     return b;
@@ -1019,6 +1080,7 @@ var LINQ;
             });
         };
 
+        // Join Methods
         Enumerable.prototype.Join = function (inner, outerKeySelector, innerKeySelector, resultSelector, compareSelector) {
             var _this = this;
             return new Enumerable(function () {
@@ -1029,7 +1091,7 @@ var LINQ;
 
                 return new IEnumerator(function () {
                     outerEnumerator = _this.GetEnumerator();
-                    lookup = FromEnumerable(inner).ToLookup(innerKeySelector, _Functions.Identity, compareSelector);
+                    lookup = FromEnumerable(inner).ToLookup(innerKeySelector, Functions.Identity, compareSelector);
                 }, function () {
                     while (true) {
                         if (innerElements) {
@@ -1063,7 +1125,7 @@ var LINQ;
 
                 return new IEnumerator(function () {
                     enumerator = _this.GetEnumerator();
-                    lookup = FromEnumerable(inner).ToLookup(innerKeySelector, _Functions.Identity, compareSelector);
+                    lookup = FromEnumerable(inner).ToLookup(innerKeySelector, Functions.Identity, compareSelector);
                 }, function () {
                     if (enumerator.MoveNext()) {
                         var innerElement = lookup.Get(outerKeySelector(enumerator.Current()));
@@ -1166,6 +1228,7 @@ var LINQ;
 
         Enumerable.prototype.Alternate = function (value) {
             var _this = this;
+            // NOTE: Rewrite to eliminate call to SelectMany for more detailed type information
             return new Enumerable(function () {
                 var enumerator;
                 var itemLast = false;
@@ -1188,7 +1251,7 @@ var LINQ;
         };
 
         Enumerable.prototype.Contains = function (value, compareSelector) {
-            compareSelector = compareSelector || _Functions.Identity;
+            compareSelector = compareSelector || Functions.Identity;
             var enumerator = this.GetEnumerator();
             try  {
                 while (enumerator.MoveNext()) {
@@ -1230,7 +1293,7 @@ var LINQ;
 
         Enumerable.prototype.Except = function (second, compareSelector) {
             var _this = this;
-            compareSelector = compareSelector || _Functions.Identity;
+            compareSelector = compareSelector || Functions.Identity;
 
             return new Enumerable(function () {
                 var enumerator;
@@ -1259,7 +1322,7 @@ var LINQ;
 
         Enumerable.prototype.Intersect = function (second, compareSelector) {
             var _this = this;
-            compareSelector = compareSelector || _Functions.Identity;
+            compareSelector = compareSelector || Functions.Identity;
 
             return new Enumerable(function () {
                 var enumerator;
@@ -1290,7 +1353,7 @@ var LINQ;
         };
 
         Enumerable.prototype.SequenceEqual = function (second, compareSelector) {
-            compareSelector = compareSelector || _Functions.Identity;
+            compareSelector = compareSelector || Functions.Identity;
 
             var firstEnumerator = this.GetEnumerator();
             try  {
@@ -1315,7 +1378,7 @@ var LINQ;
 
         Enumerable.prototype.Union = function (second, compareSelector) {
             var _this = this;
-            compareSelector = compareSelector || _Functions.Identity;
+            compareSelector = compareSelector || Functions.Identity;
 
             return new Enumerable(function () {
                 var firstEnumerator;
@@ -1366,7 +1429,7 @@ var LINQ;
                     index = buffer.length;
                 }, function () {
                     return (index > 0) ? this.Yield(buffer[--index]) : false;
-                }, _Functions.Blank);
+                }, Functions.Blank);
             });
         };
 
@@ -1383,14 +1446,14 @@ var LINQ;
                         return this.Yield(buffer.splice(i, 1)[0]);
                     }
                     return false;
-                }, _Functions.Blank);
+                }, Functions.Blank);
             });
         };
 
         Enumerable.prototype.GroupBy = function (keySelector, elementSelector, resultSelector, compareSelector) {
             var _this = this;
-            elementSelector = elementSelector || _Functions.Identity;
-            compareSelector = compareSelector || _Functions.Identity;
+            elementSelector = elementSelector || Functions.Identity;
+            compareSelector = compareSelector || Functions.Identity;
 
             return new Enumerable(function () {
                 var enumerator;
@@ -1410,8 +1473,8 @@ var LINQ;
 
         Enumerable.prototype.PartitionBy = function (keySelector, elementSelector, resultSelector, compareSelector) {
             var _this = this;
-            elementSelector = elementSelector || _Functions.Identity;
-            compareSelector = compareSelector || _Functions.Identity;
+            elementSelector = elementSelector || Functions.Identity;
+            compareSelector = compareSelector || Functions.Identity;
             if (!resultSelector)
                 resultSelector = function (key, group) {
                     return new Grouping(key, group);
@@ -1465,7 +1528,7 @@ var LINQ;
         };
 
         Enumerable.prototype.Average = function (selector) {
-            selector = selector || _Functions.Identity;
+            selector = selector || Functions.Identity;
 
             var sum = 0;
             var count = 0;
@@ -1478,7 +1541,7 @@ var LINQ;
         };
 
         Enumerable.prototype.Count = function (predicate) {
-            predicate = predicate || _Functions.True;
+            predicate = predicate || Functions.True;
 
             var count = 0;
             this.ForEach(function (x, i) {
@@ -1489,14 +1552,14 @@ var LINQ;
         };
 
         Enumerable.prototype.Max = function (selector) {
-            selector = selector || _Functions.Identity;
+            selector = selector || Functions.Identity;
             return this.Select(selector).Aggregate(function (a, b) {
                 return (a > b) ? a : b;
             });
         };
 
         Enumerable.prototype.Min = function (selector) {
-            selector = selector || _Functions.Identity;
+            selector = selector || Functions.Identity;
             return this.Select(selector).Aggregate(function (a, b) {
                 return (a < b) ? a : b;
             });
@@ -1515,12 +1578,13 @@ var LINQ;
         };
 
         Enumerable.prototype.Sum = function (selector) {
-            selector = selector || _Functions.Identity;
+            selector = selector || Functions.Identity;
             return this.Select(selector).Aggregate(0, function (a, b) {
                 return a + b;
             });
         };
 
+        // Paging Methods
         Enumerable.prototype.ElementAt = function (index) {
             var value;
             var found = false;
@@ -1533,7 +1597,7 @@ var LINQ;
             });
 
             if (!found)
-                throw new Error("index is less than 0 or greater than or equal to the number of elements in source.");
+                throw new Error("ElementAt: Index is less than 0 or greater than or equal to the number of elements in the sequence.");
             return value;
         };
 
@@ -1563,7 +1627,7 @@ var LINQ;
             });
 
             if (!found)
-                throw new Error("First:No element satisfies the condition.");
+                throw new Error("First: No element satisfies the condition.");
             return value;
         };
 
@@ -1591,7 +1655,7 @@ var LINQ;
             });
 
             if (!found)
-                throw new Error("Last:No element satisfies the condition.");
+                throw new Error("Last: No element satisfies the condition.");
             return value;
         };
 
@@ -1616,13 +1680,13 @@ var LINQ;
                         found = true;
                         value = x;
                     } else {
-                        throw new Error("Single:sequence contains more than one element.");
+                        throw new Error("Single: Sequence contains more than one element satisfying the condition.");
                     }
                 }
             });
 
             if (!found)
-                throw new Error("Single:No element satisfies the condition.");
+                throw new Error("Single: No element in the sequence satisfies the condition.");
             return value;
         };
 
@@ -1635,7 +1699,7 @@ var LINQ;
                         found = true;
                         value = x;
                     } else {
-                        throw new Error("Single:sequence contains more than one element.");
+                        throw new Error("Single: Sequence contains more than one element satisfying the condition.");
                     }
                 }
             });
@@ -1801,6 +1865,7 @@ var LINQ;
             return result;
         };
 
+        // Conversion Methods
         Enumerable.prototype.ToArray = function () {
             var array = [];
             this.ForEach(function (x) {
@@ -1810,8 +1875,8 @@ var LINQ;
         };
 
         Enumerable.prototype.ToLookup = function (keySelector, elementSelector, compareSelector) {
-            elementSelector = elementSelector || _Functions.Identity;
-            compareSelector = compareSelector || _Functions.Identity;
+            elementSelector = elementSelector || Functions.Identity;
+            compareSelector = compareSelector || Functions.Identity;
 
             var dict = new Dictionary(compareSelector);
             this.ForEach(function (x) {
@@ -1835,8 +1900,8 @@ var LINQ;
         };
 
         Enumerable.prototype.ToDictionary = function (keySelector, elementSelector, compareSelector) {
-            elementSelector = elementSelector || _Functions.Identity;
-            compareSelector = compareSelector || _Functions.Identity;
+            elementSelector = elementSelector || Functions.Identity;
+            compareSelector = compareSelector || Functions.Identity;
 
             var dict = new Dictionary(compareSelector);
             this.ForEach(function (x) {
@@ -1852,11 +1917,12 @@ var LINQ;
         Enumerable.prototype.ToString = function (separator, selector) {
             if (!separator)
                 separator = "";
-            selector = selector || _Functions.Identity;
+            selector = selector || Functions.Identity;
 
             return this.Select(selector).ToArray().join(separator);
         };
 
+        // Action Methods
         Enumerable.prototype.Do = function (action) {
             var _this = this;
             return new Enumerable(function () {
@@ -1898,7 +1964,7 @@ var LINQ;
         Enumerable.prototype.Write = function (separator, selector) {
             if (!separator)
                 separator = "";
-            selector = selector || _Functions.Identity;
+            selector = selector || Functions.Identity;
 
             var isFirst = true;
             this.ForEach(function (item) {
@@ -1910,7 +1976,7 @@ var LINQ;
         };
 
         Enumerable.prototype.WriteLine = function (selector) {
-            selector = selector || _Functions.Identity;
+            selector = selector || Functions.Identity;
 
             this.ForEach(function (item) {
                 document.write(selector(item));
@@ -1929,6 +1995,7 @@ var LINQ;
             }
         };
 
+        // Functional Methods
         Enumerable.prototype.Let = function (func) {
             var _this = this;
             return new Enumerable(function () {
@@ -1954,7 +2021,7 @@ var LINQ;
                         sharedEnumerator = _this.GetEnumerator();
                 }, function () {
                     return sharedEnumerator.MoveNext() ? this.Yield(sharedEnumerator.Current()) : false;
-                }, _Functions.Blank);
+                }, Functions.Blank);
             });
         };
 
@@ -1977,10 +2044,11 @@ var LINQ;
                         return enumerator.MoveNext() ? this.Yield(cache[index] = enumerator.Current()) : false;
                     }
                     return this.Yield(cache[index]);
-                }, _Functions.Blank);
+                }, Functions.Blank);
             });
         };
 
+        // Error Handling Methods
         Enumerable.prototype.Catch = function (handler) {
             var _this = this;
             return new Enumerable(function () {
@@ -2022,10 +2090,11 @@ var LINQ;
             });
         };
 
+        // Debug Methods
         Enumerable.prototype.Trace = function (message, selector) {
             if (message === undefined || message === null)
                 message = "Trace";
-            selector = selector || _Functions.Identity;
+            selector = selector || Functions.Identity;
 
             return this.Do(function (item) {
                 return console.log(message, ":", selector(item));
@@ -2035,6 +2104,7 @@ var LINQ;
     })();
     LINQ.Enumerable = Enumerable;
 
+    // Sorting Context
     function CreateSortContext(orderedEnumerable, currentContext) {
         var context = new SortContext(orderedEnumerable.keySelector, orderedEnumerable.descending, currentContext);
         if (orderedEnumerable.parent)
@@ -2099,7 +2169,7 @@ var LINQ;
                     });
                 }, function () {
                     return (index < indexes.length) ? this.Yield(buffer[indexes[index++]]) : false;
-                }, _Functions.Blank);
+                }, Functions.Blank);
             };
         }
         OrderedEnumerable.prototype.CreateOrderedEnumerable = function (keySelector, descending) {
@@ -2115,6 +2185,7 @@ var LINQ;
     })(Enumerable);
     LINQ.OrderedEnumerable = OrderedEnumerable;
 
+    // ArrayEnumerable: Enumerable optimized for array or array-like object
     var ArrayEnumerable = (function (_super) {
         __extends(ArrayEnumerable, _super);
         function ArrayEnumerable(src) {
@@ -2127,12 +2198,12 @@ var LINQ;
             this.GetEnumerator = function () {
                 var index = 0;
 
-                return new IEnumerator(_Functions.Blank, function () {
+                return new IEnumerator(Functions.Blank, function () {
                     while (index < source.length) {
                         return this.Yield(source[index++]);
                     }
                     return false;
-                }, _Functions.Blank);
+                }, Functions.Blank);
             };
         }
         ArrayEnumerable.prototype.Any = function (predicate) {
@@ -2173,7 +2244,7 @@ var LINQ;
                         return this.Yield(source[index++]);
                     }
                     return false;
-                }, _Functions.Blank);
+                }, Functions.Blank);
             });
         };
         ArrayEnumerable.prototype.TakeExceptLast = function (count) {
@@ -2195,7 +2266,7 @@ var LINQ;
                     return index = source.length;
                 }, function () {
                     return (index > 0) ? this.Yield(source[--index]) : false;
-                }, _Functions.Blank);
+                }, Functions.Blank);
             });
         };
 
@@ -2218,6 +2289,7 @@ var LINQ;
     })(Enumerable);
     LINQ.ArrayEnumerable = ArrayEnumerable;
 
+    // Grouping
     var Grouping = (function (_super) {
         __extends(Grouping, _super);
         function Grouping(key, elements) {
@@ -2232,3 +2304,4 @@ var LINQ;
     })(ArrayEnumerable);
     LINQ.Grouping = Grouping;
 })(LINQ || (LINQ = {}));
+//@ sourceMappingURL=linq.js.map
