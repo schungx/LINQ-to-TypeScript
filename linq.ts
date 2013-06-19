@@ -1142,7 +1142,7 @@ module LINQ
 			} );
 		}
 
-		GroupJoin<K, U, V>(inner: Enumerable<U>, outerKeySelector: Transform<T, K>, innerKeySelector: Transform<T, K>, resultSelector: InnerOuterTransform<T, Enumerable<U>, V>, compareSelector?: Transform<K, any>): Enumerable<V>
+		GroupJoin<K, U, V>(inner: Enumerable<U>, outerKeySelector: Transform<T, K>, innerKeySelector: Transform<U, K>, resultSelector: InnerOuterTransform<T, Enumerable<U>, V>, compareSelector?: Transform<K, any>): Enumerable<V>
 		{
 			return new Enumerable<V>(() => {
 				var enumerator: IEnumerator<T>;
@@ -1151,13 +1151,13 @@ module LINQ
 				return new IEnumerator<V>(
 					() => {
 						enumerator = this.GetEnumerator();
-						lookup = FromEnumerable(inner).ToLookup(innerKeySelector, Functions.Identity, compareSelector);
+						lookup = FromEnumerable(inner).ToLookup(innerKeySelector, Functions.Identity, compareSelector);		// BUG in TypeScript: Shouldn't need to specify type
 					} ,
 					function ()
 					{
 						if (enumerator.MoveNext()) {
-							var innerElement = lookup.Get(outerKeySelector(enumerator.Current()));
-							return this.Yield(resultSelector(enumerator.Current(), innerElement));
+							var innerElements = lookup.Get(outerKeySelector(enumerator.Current()));
+							return this.Yield(resultSelector(enumerator.Current(), innerElements));
 						}
 						return false;
 					} ,
