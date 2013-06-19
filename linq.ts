@@ -1,3 +1,15 @@
+/*--------------------------------------------------------------------------
+* linq.ts - LINQ for JavaScript in TypeScript
+*   Based on linq.js ver 2.2.0.0 (Jun. 28th, 2010)
+*   created and maintained by neuecc <ils@neue.cc>
+*   licensed under Microsoft Public License(Ms-PL)
+*   http://neue.cc/
+*   http://linqjs.codeplex.com/
+*
+* Converted by Stephen Chung (Stephen.Chung@intexact.com) to TyepScript
+* June 2013
+*--------------------------------------------------------------------------*/
+
 module LINQ
 {
 	// Types and interfaces
@@ -12,9 +24,8 @@ module LINQ
 	export interface Transform<T, U> { (item: T): U; }
 	export interface TransformX<T, U> { (item: T, index: number): U; }
 
-	export interface DualTransform<T, U, V> { (item1: T, item2: U): V; }
-	export interface DualTransformX<T, U, V> { (item1: T, item2: U, index: number): V; }
-	export interface NumericTransform<T> { (item: T): number; }
+	export interface InnerOuterTransform<T, U, V> { (outer: T, inner: U): V; }
+	export interface InnerOuterTransformX<T, U, V> { (outer: T, inner: U, index: number): V; }
 	export interface PreviousCurrentTransform<T, U, V> { (previousItem: T, currentItem: U): V; }
 
 	// JScript's Enumerator
@@ -62,9 +73,9 @@ module LINQ
 
 	enum States
 	{
-		Before = 0,
-		Running = 1,
-		After = 2
+		Before,
+		Running,
+		After
 	}
 
 	// for tryGetNext
@@ -165,12 +176,12 @@ module LINQ
 			if (obj === null) return "null";
 			if (obj === undefined) return "undefined";
 
-			if (typeof obj === "number") {
+			if (typeof obj === Types.Number) {
 				var num = Math.floor((<number> obj) % 10000);
 				return num.toString();
 			}
 
-			if (typeof obj === "string") {
+			if (typeof obj === Types.String) {
 				// Java's hash function
 				var str = <string> obj;
 				var hash = 0;
@@ -484,11 +495,12 @@ module LINQ
 			return this.dictionary.ToEnumerable().Select(kvp => new Grouping(kvp.Key, kvp.Value));
 		}
 	}
-/********** BUG in TypeScript ***************
-	export function Choice<T>(v_args: T[]): Enumerable<T>;
-	export function Choice<T>(...v_args: T[]): Enumerable<T>
+
+	export function Choice<T>(args: T[]): Enumerable<T>;
+	export function Choice<T>(...v_args: T[]): Enumerable<T>;
+	export function Choice<T>(...v_args: any[]): Enumerable<T>
 	{
-		var args = (v_args[0] instanceof Array) ? v_args[0] : v_args;
+		var args = (v_args[0] instanceof Array) ? (<T[]> v_args[0]) : (<T[]> v_args);
 
 		return new Enumerable<T>(() => new IEnumerator<T>(
 			Functions.Blank,
@@ -496,9 +508,11 @@ module LINQ
 			Functions.Blank));
 	}
 
-	export function Cycle<T>(...v_args: T[]): Enumerable<T>
+	export function Cycle<T>(args: T[]): Enumerable<T>;
+	export function Cycle<T>(...v_args: T[]): Enumerable<T>;
+	export function Cycle<T>(...v_args: any[]): Enumerable<T>
 	{
-		var args = (v_args[0] instanceof Array) ? v_args[0] : v_args;
+		var args = (v_args[0] instanceof Array) ? (<T[]> v_args[0]) : (<T[]> v_args);
 
 		return new Enumerable<T>(() => {
 			var index = 0;
@@ -512,7 +526,7 @@ module LINQ
 				Functions.Blank);
 		} );
 	}
-**************/
+
 	export function Empty<T>(): Enumerable<T>
 	{
 		return new Enumerable<T>(() => new IEnumerator<T>(
@@ -1002,13 +1016,13 @@ module LINQ
 		SelectMany(collectionSelector: TransformX<T, string>): Enumerable<string>;
 		SelectMany(collectionSelector: TransformX<T, boolean>): Enumerable<boolean>;
 		SelectMany(collectionSelector: TransformX<T, Object>): Enumerable<KeyValuePair<string, any>>;
-		SelectMany<U, V>(collectionSelector: TransformX<T, U[]>, resultSelector: DualTransform<T, U, V>): Enumerable<V>;
-		SelectMany<U, V>(collectionSelector: TransformX<T, Enumerable<U>>, resultSelector: DualTransform<T, U, V>): Enumerable<V>;
-		SelectMany<V>(collectionSelector: TransformX<T, number>, resultSelector: DualTransform<T, number, V>): Enumerable<V>;
-		SelectMany<V>(collectionSelector: TransformX<T, string>, resultSelector: DualTransform<T, string, V>): Enumerable<V>;
-		SelectMany<V>(collectionSelector: TransformX<T, boolean>, resultSelector: DualTransform<T, boolean, V>): Enumerable<V>;
-		SelectMany<V>(collectionSelector: TransformX<T, Object>, resultSelector: DualTransform<T, KeyValuePair<string, any>, V>): Enumerable<V>;
-		SelectMany<V>(collectionSelector?: TransformX<T, any>, resultSelector?: DualTransform<T, any, V>): Enumerable<V>
+		SelectMany<U, V>(collectionSelector: TransformX<T, U[]>, resultSelector: InnerOuterTransform<T, U, V>): Enumerable<V>;
+		SelectMany<U, V>(collectionSelector: TransformX<T, Enumerable<U>>, resultSelector: InnerOuterTransform<T, U, V>): Enumerable<V>;
+		SelectMany<V>(collectionSelector: TransformX<T, number>, resultSelector: InnerOuterTransform<T, number, V>): Enumerable<V>;
+		SelectMany<V>(collectionSelector: TransformX<T, string>, resultSelector: InnerOuterTransform<T, string, V>): Enumerable<V>;
+		SelectMany<V>(collectionSelector: TransformX<T, boolean>, resultSelector: InnerOuterTransform<T, boolean, V>): Enumerable<V>;
+		SelectMany<V>(collectionSelector: TransformX<T, Object>, resultSelector: InnerOuterTransform<T, KeyValuePair<string, any>, V>): Enumerable<V>;
+		SelectMany<V>(collectionSelector?: TransformX<T, any>, resultSelector?: InnerOuterTransform<T, any, V>): Enumerable<V>
 		{
 			collectionSelector = collectionSelector || Functions.Identity;
 			if (!resultSelector) resultSelector = (a, b) => b;
@@ -1063,9 +1077,9 @@ module LINQ
 			} );
 		}
 
-		Zip<U, V>(second: Enumerable<U>, selector: DualTransformX<T, U, V>): Enumerable<V>;
-		Zip<U, V>(second: U[], selector: DualTransformX<T, U, V>): Enumerable<V>;
-		Zip<U, V>(second: any, selector: DualTransformX<T, U, V>): Enumerable<V>
+		Zip<U, V>(second: Enumerable<U>, selector: InnerOuterTransformX<T, U, V>): Enumerable<V>;
+		Zip<U, V>(second: U[], selector: InnerOuterTransformX<T, U, V>): Enumerable<V>;
+		Zip<U, V>(second: any, selector: InnerOuterTransformX<T, U, V>): Enumerable<V>
 		{
 			return new Enumerable<V>(() => {
 				var index = 0;
@@ -1090,7 +1104,7 @@ module LINQ
 
 		// Join Methods
 
-		Join<K, U, V>(inner: Enumerable<U>, outerKeySelector: Transform<T, K>, innerKeySelector: Transform<U, K>, resultSelector: DualTransform<T, U, V>, compareSelector?: Transform<K, any>): Enumerable<V>
+		Join<K, U, V>(inner: Enumerable<U>, outerKeySelector: Transform<T, K>, innerKeySelector: Transform<U, K>, resultSelector: InnerOuterTransform<T, U, V>, compareSelector?: Transform<K, any>): Enumerable<V>
 		{
 			return new Enumerable<V>(() => {
 				var outerEnumerator: IEnumerator<T>;
@@ -1128,7 +1142,7 @@ module LINQ
 			} );
 		}
 
-		GroupJoin<K, U, V>(inner: Enumerable<U>, outerKeySelector: Transform<T, K>, innerKeySelector: Transform<T, K>, resultSelector: DualTransform<T, Enumerable<U>, V>, compareSelector?: Transform<K, any>): Enumerable<V>
+		GroupJoin<K, U, V>(inner: Enumerable<U>, outerKeySelector: Transform<T, K>, innerKeySelector: Transform<T, K>, resultSelector: InnerOuterTransform<T, Enumerable<U>, V>, compareSelector?: Transform<K, any>): Enumerable<V>
 		{
 			return new Enumerable<V>(() => {
 				var enumerator: IEnumerator<T>;
@@ -1586,7 +1600,7 @@ module LINQ
 			return this.Scan(seed, func, resultSelector).Last();
 		}
 
-		Average(selector?: NumericTransform<T>): number
+		Average(selector?: Transform<T, number>): number
 		{
 			selector = selector || Functions.Identity;
 
@@ -1611,29 +1625,37 @@ module LINQ
 			return count;
 		}
 
-		Max(selector?: NumericTransform<T>): number
+		Max(selector?: Transform<T, number>): number;
+		Max(selector?: Transform<T, string>): string;
+		Max(selector?: Transform<T, any>): any
 		{
 			selector = selector || Functions.Identity;
-			return this.Select(selector).Aggregate((a: number, b: number) => (a > b) ? a : b);
+			return this.Select(selector).Aggregate((a, b) => (a > b) ? a : b);
 		}
 
-		Min(selector?: NumericTransform<T>): number
+		Min(selector?: Transform<T, number>): number;
+		Min(selector?: Transform<T, string>): string;
+		Min(selector?: Transform<T, any>): any
 		{
 			selector = selector || Functions.Identity;
-			return this.Select(selector).Aggregate((a: number, b: number) => (a < b) ? a : b);
+			return this.Select(selector).Aggregate((a, b) => (a < b) ? a : b);
 		}
 
-		MaxBy(keySelector: NumericTransform<T>): number
+		MaxBy(keySelector: Transform<T, number>): T;
+		MaxBy(keySelector: Transform<T, string>): T;
+		MaxBy(keySelector: Transform<T, any>): T
 		{
 			return this.Aggregate((a, b) => (keySelector(a) > keySelector(b)) ? a : b);
 		}
 
-		MinBy(keySelector: NumericTransform<T>): number
+		MinBy(keySelector: Transform<T, number>): T;
+		MinBy(keySelector: Transform<T, string>): T;
+		MinBy(keySelector: Transform<T, any>): T
 		{
 			return this.Aggregate((a, b) => (keySelector(a) < keySelector(b)) ? a : b);
 		}
 
-		Sum(selector?: NumericTransform<T>): number
+		Sum(selector?: Transform<T, number>): number
 		{
 			selector = selector || Functions.Identity;
 			return this.Select(selector).Aggregate(0, (a: number, b: number) => a + b);
@@ -1653,7 +1675,7 @@ module LINQ
 				}
 			} );
 
-			if (!found) throw new Error("index is less than 0 or greater than or equal to the number of elements in source.");
+			if (!found) throw new Error("ElementAt: Index is less than 0 or greater than or equal to the number of elements in the sequence.");
 			return value;
 		}
 
@@ -1684,7 +1706,7 @@ module LINQ
 				}
 			} );
 
-			if (!found) throw new Error("First:No element satisfies the condition.");
+			if (!found) throw new Error("First: No element satisfies the condition.");
 			return value;
 		}
 
@@ -1713,7 +1735,7 @@ module LINQ
 				}
 			});
 
-			if (!found) throw new Error("Last:No element satisfies the condition.");
+			if (!found) throw new Error("Last: No element satisfies the condition.");
 			return value;
 		}
 
@@ -1740,12 +1762,12 @@ module LINQ
 						found = true;
 						value = x;
 					} else {
-						throw new Error("Single:sequence contains more than one element.");
+						throw new Error("Single: Sequence contains more than one element satisfying the condition.");
 					}
 				}
 			});
 
-			if (!found) throw new Error("Single:No element satisfies the condition.");
+			if (!found) throw new Error("Single: No element in the sequence satisfies the condition.");
 			return value;
 		}
 
@@ -1759,7 +1781,7 @@ module LINQ
 						found = true;
 						value = x;
 					} else {
-						throw new Error("Single:sequence contains more than one element.");
+						throw new Error("Single: Sequence contains more than one element satisfying the condition.");
 					}
 				}
 			});
