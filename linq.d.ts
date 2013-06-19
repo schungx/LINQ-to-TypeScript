@@ -1,25 +1,20 @@
 declare module LINQ
 {
-  // Types and interfaces
+	// Types and interfaces
 
-	export interface Generator<T> { (): T; }
-	export interface SimpleAction { (): void; }
-	export interface Action<T> { (item: T): void; }
-	export interface ActionX<T> { (item: T, index: number): void; }
-	export interface Predicate<T> { (item: T): boolean; }
-	export interface PredicateX<T> { (item: T, index: number): boolean; }
+	interface Predicate<T> { (item: T): boolean; }
+	interface PredicateX<T> { (item: T, index: number): boolean; }
 
-	export interface Transform<T, U> { (item: T): U; }
-	export interface TransformX<T, U> { (item: T, index: number): U; }
+	interface Transform<T, U> { (item: T): U; }
+	interface TransformX<T, U> { (item: T, index: number): U; }
 
-	export interface DualTransform<T, U, V> { (item1: T, item2: U): V; }
-	export interface DualTransformX<T, U, V> { (item1: T, item2: U, index: number): V; }
-	export interface NumericTransform<T> { (item: T): number; }
-	export interface PreviousCurrentTransform<T, U, V> { (previousItem: T, currentItem: U): V; }
+	interface InnerOuterTransform<T, U, V> { (outer: T, inner: U): V; }
+	interface InnerOuterTransformX<T, U, V> { (outer: T, inner: U, index: number): V; }
+	interface PreviousCurrentTransform<T, U, V> { (previousItem: T, currentItem: U): V; }
 
 	// Types
 
-	export interface KeyValuePair<K, V>
+	interface KeyValuePair<K, V>
 	{
 		Key: K;
 		Value: V;
@@ -27,7 +22,7 @@ declare module LINQ
 
 	// Collection
 
-	export class Collection<T>
+	class Collection<T>
 	{
 		Count(): number;
 		Add(item: T): void;
@@ -39,7 +34,7 @@ declare module LINQ
 
 	// Dictionary
 
-	export class Dictionary<K, V>
+	class Dictionary<K, V>
 	{
 		Count(): number;
 		Add(key: K, value?: V): void;
@@ -53,7 +48,7 @@ declare module LINQ
 
 	// Lookup
 
-	export class Lookup<K, V>
+	class Lookup<K, V>
 	{
 		Count(): number;
 		Get(key: K): Enumerable<V>;
@@ -61,55 +56,55 @@ declare module LINQ
 		ToEnumerable(): Enumerable<Grouping<K, V>>;
 	}
 
-	export function Choice<T>(v_args: T[]): Enumerable<T>;
-	export function Choice<T>(...v_args: T[]): Enumerable<T>;
+	function Choice<T>(v_args: T[]): Enumerable<T>;
+	function Choice<T>(...v_args: T[]): Enumerable<T>;
 
-	export function Cycle<T>(v_args: T[]): Enumerable<T>;
-	export function Cycle<T>(...v_args: T[]): Enumerable<T>;
+	function Cycle<T>(v_args: T[]): Enumerable<T>;
+	function Cycle<T>(...v_args: T[]): Enumerable<T>;
 
-	export function Empty<T>(): Enumerable<T>;
+	function Empty<T>(): Enumerable<T>;
 
 	/*
-	export function FromNull<T>(): Enumerable<T>;
-	export function FromEnumerable<T>(obj: Enumerable<T>): Enumerable<T>;
-	export function FromNumber(obj: number): Enumerable<number>;
-	export function FromBoolean(obj: boolean): Enumerable<boolean>;
-	export function FromString(obj: string): Enumerable<string>;
-	export function FromFunction(obj: Function): Enumerable<KeyValuePair<string, any>>;
-	export function FromArray<T>(obj: T[]): Enumerable<T>;
+	function FromNull<T>(): Enumerable<T>;
+	function FromEnumerable<T>(obj: Enumerable<T>): Enumerable<T>;
+	function FromNumber(obj: number): Enumerable<number>;
+	function FromBoolean(obj: boolean): Enumerable<boolean>;
+	function FromString(obj: string): Enumerable<string>;
+	function FromFunction(obj: Function): Enumerable<KeyValuePair<string, any>>;
+	function FromArray<T>(obj: T[]): Enumerable<T>;
 
-	export function FromArrayOrEnumerable<T>(obj: T[]): Enumerable<T>;
-	export function FromArrayOrEnumerable<T>(obj: Enumerable<T>): Enumerable<T>;
+	function FromArrayOrEnumerable<T>(obj: T[]): Enumerable<T>;
+	function FromArrayOrEnumerable<T>(obj: Enumerable<T>): Enumerable<T>;
 
-	export function FromObject<T>(obj: { [name: string]: T; }): Enumerable<KeyValuePair<string, T>>;
-	export function FromObject(obj: Object): Enumerable<KeyValuePair<string, any>>;
+	function FromObject<T>(obj: { [name: string]: T; }): Enumerable<KeyValuePair<string, T>>;
+	function FromObject(obj: Object): Enumerable<KeyValuePair<string, any>>;
 	*/
 
-	export function From<T>(obj: Enumerable<T>): Enumerable<T>;
-	export function From(obj: number): Enumerable<number>;
-	export function From(obj: boolean): Enumerable<boolean>;
-	export function From(obj: string): Enumerable<string>;
-	export function From<T>(obj: T[]): Enumerable<T>;
-	export function From(obj: Function): Enumerable<KeyValuePair<string, any>>;
-	export function From<T>(obj: { [name: string]: T; }): Enumerable<KeyValuePair<string, T>>;
-	export function From(obj: Object): Enumerable<KeyValuePair<string, any>>;
+	function From<T>(obj: Enumerable<T>): Enumerable<T>;
+	function From(obj: number): Enumerable<number>;
+	function From(obj: boolean): Enumerable<boolean>;
+	function From(obj: string): Enumerable<string>;
+	function From<T>(obj: T[]): Enumerable<T>;
+	function From(obj: Function): Enumerable<KeyValuePair<string, any>>;
+	function From<T>(obj: { [name: string]: T; }): Enumerable<KeyValuePair<string, T>>;
+	function From(obj: Object): Enumerable<KeyValuePair<string, any>>;
 
-	export function Return<T>(element: T): Enumerable<T>;
+	function Return<T>(element: T): Enumerable<T>;
 
-	export function Matches(input: string, pattern?: RegExp, flags?: string): Enumerable<string>;
-	export function Matches(input: string, pattern?: string, flags?: string): Enumerable<string>;
+	function Matches(input: string, pattern?: RegExp, flags?: string): Enumerable<string>;
+	function Matches(input: string, pattern?: string, flags?: string): Enumerable<string>;
 
-	export function Range(start: number, count: number, step?: number): Enumerable<number>;
-	export function RangeDown(start: number, count: number, step?: number): Enumerable<number>;
-	export function RangeTo(start: number, to: number, step?: number): Enumerable<number>;
-	export function Repeat<T>(obj: T, num?: number): Enumerable<T>;
-	export function RepeatWithFinalize<T>(initializer: Generator<T>, finalizer?: Action<T>): Enumerable<T>;
-	export function Generate<T>(func: Generator<T>, count?: number): Enumerable<T>;
-	export function ToInfinity(start?: number, step?: number): Enumerable<number>;
-	export function ToNegativeInfinity(start?: number, step?: number): Enumerable<number>;
-	export function Unfold<V>(seed: V, func?: Transform<V, V>): Enumerable<V>;
+	function Range(start: number, count: number, step?: number): Enumerable<number>;
+	function RangeDown(start: number, count: number, step?: number): Enumerable<number>;
+	function RangeTo(start: number, to: number, step?: number): Enumerable<number>;
+	function Repeat<T>(obj: T, num?: number): Enumerable<T>;
+	function RepeatWithFinalize<T>(initializer: () => T, finalizer?: (item: T) => void ): Enumerable<T>;
+	function Generate<T>(func: () => T, count?: number): Enumerable<T>;
+	function ToInfinity(start?: number, step?: number): Enumerable<number>;
+	function ToNegativeInfinity(start?: number, step?: number): Enumerable<number>;
+	function Unfold<V>(seed: V, func?: Transform<V, V>): Enumerable<V>;
 
-	export class Enumerable<T>
+	class Enumerable<T>
 	{
 		// Type Filtering Methods
 
@@ -141,22 +136,22 @@ declare module LINQ
 		SelectMany(collectionSelector: TransformX<T, string>): Enumerable<string>;
 		SelectMany(collectionSelector: TransformX<T, boolean>): Enumerable<boolean>;
 		SelectMany(collectionSelector: TransformX<T, Object>): Enumerable<KeyValuePair<string, any>>;
-		SelectMany<U, V>(collectionSelector: TransformX<T, U[]>, resultSelector: DualTransform<T, U, V>): Enumerable<V>;
-		SelectMany<U, V>(collectionSelector: TransformX<T, Enumerable<U>>, resultSelector: DualTransform<T, U, V>): Enumerable<V>;
-		SelectMany<V>(collectionSelector: TransformX<T, number>, resultSelector: DualTransform<T, number, V>): Enumerable<V>;
-		SelectMany<V>(collectionSelector: TransformX<T, string>, resultSelector: DualTransform<T, string, V>): Enumerable<V>;
-		SelectMany<V>(collectionSelector: TransformX<T, boolean>, resultSelector: DualTransform<T, boolean, V>): Enumerable<V>;
-		SelectMany<V>(collectionSelector: TransformX<T, Object>, resultSelector: DualTransform<T, KeyValuePair<string, any>, V>): Enumerable<V>;
+		SelectMany<U, V>(collectionSelector: TransformX<T, U[]>, resultSelector: InnerOuterTransform<T, U, V>): Enumerable<V>;
+		SelectMany<U, V>(collectionSelector: TransformX<T, Enumerable<U>>, resultSelector: InnerOuterTransform<T, U, V>): Enumerable<V>;
+		SelectMany<V>(collectionSelector: TransformX<T, number>, resultSelector: InnerOuterTransform<T, number, V>): Enumerable<V>;
+		SelectMany<V>(collectionSelector: TransformX<T, string>, resultSelector: InnerOuterTransform<T, string, V>): Enumerable<V>;
+		SelectMany<V>(collectionSelector: TransformX<T, boolean>, resultSelector: InnerOuterTransform<T, boolean, V>): Enumerable<V>;
+		SelectMany<V>(collectionSelector: TransformX<T, Object>, resultSelector: InnerOuterTransform<T, KeyValuePair<string, any>, V>): Enumerable<V>;
 
 		Where(predicate: PredicateX<T>): Enumerable<T>;
 
-		Zip<U, V>(second: Enumerable<U>, selector: DualTransformX<T, U, V>): Enumerable<V>;
-		Zip<U, V>(second: U[], selector: DualTransformX<T, U, V>): Enumerable<V>;
+		Zip<U, V>(second: Enumerable<U>, selector: InnerOuterTransformX<T, U, V>): Enumerable<V>;
+		Zip<U, V>(second: U[], selector: InnerOuterTransformX<T, U, V>): Enumerable<V>;
 
 		// Join Methods
 
-		Join<K, U, V>(inner: Enumerable<U>, outerKeySelector: Transform<T, K>, innerKeySelector: Transform<U, K>, resultSelector: DualTransform<T, U, V>, compareSelector?: Transform<K, any>): Enumerable<V>;
-		GroupJoin<K, U, V>(inner: Enumerable<U>, outerKeySelector: Transform<T, K>, innerKeySelector: Transform<T, K>, resultSelector: DualTransform<T, Enumerable<U>, V>, compareSelector?: Transform<K, any>): Enumerable<V>;
+		Join<K, U, V>(inner: Enumerable<U>, outerKeySelector: Transform<T, K>, innerKeySelector: Transform<U, K>, resultSelector: InnerOuterTransform<T, U, V>, compareSelector?: Transform<K, any>): Enumerable<V>;
+		GroupJoin<K, U, V>(inner: Enumerable<U>, outerKeySelector: Transform<T, K>, innerKeySelector: Transform<T, K>, resultSelector: InnerOuterTransform<T, Enumerable<U>, V>, compareSelector?: Transform<K, any>): Enumerable<V>;
 		All(predicate: Predicate<T>): boolean;
 		Any(predicate?: Predicate<T>): boolean;
 
@@ -188,7 +183,7 @@ declare module LINQ
 
 		// Grouping Methods
 
-		//BUG*************GroupBy<K>(keySelector: Transform<T, K>): Enumerable<Grouping<K, T>>;
+//BUG*************GroupBy<K>(keySelector: Transform<T, K>): Enumerable<Grouping<K, T>>;
 		GroupBy<K, U, V>(keySelector: Transform<T, K>, elementSelector: Transform<T, V>): Enumerable<Grouping<K, V>>;
 		GroupBy<K, U, V>(keySelector: Transform<T, K>, elementSelector: Transform<T, U>, resultSelector: (key: K, group: Grouping<K, U>) => V, compareSelector?: Transform<K, any>): Enumerable<V>;
 
@@ -196,9 +191,8 @@ declare module LINQ
 		PartitionBy<K, V>(keySelector: Transform<T, K>, elementSelector: Transform<T, V>): Enumerable<V>;
 		PartitionBy<K, U, V>(keySelector: Transform<T, K>, elementSelector: Transform<T, U>, resultSelector: (key: K, group: U[]) => V, compareSelector?: Transform<K, any>): Enumerable<V>;
 
-	/**********
-		BufferWithCount(count: number): Enumerable<T[]>;
-	*********/
+//BUG*************BufferWithCount(count: number): Enumerable<T[]>;
+
 		// Aggregate Methods
 
 		Aggregate<V>(func: PreviousCurrentTransform<V, T, V>): V;
@@ -206,13 +200,21 @@ declare module LINQ
 		Aggregate<V>(seed: T, func: PreviousCurrentTransform<V, T, V>): V;
 		Aggregate<U, V>(seed: T, func: PreviousCurrentTransform<U, T, U>, resultSelector: TransformX<U, V>): V;
 
-		Average(selector?: NumericTransform<T>): number;
 		Count(predicate?: PredicateX<T>): number;
-		Max(selector?: NumericTransform<T>): number;
-		Min(selector?: NumericTransform<T>): number;
-		MaxBy(keySelector: NumericTransform<T>): number;
-		MinBy(keySelector: NumericTransform<T>): number;
-		Sum(selector?: NumericTransform<T>): number;
+		Average(selector?: Transform<T, number>): number;
+		Sum(selector?: Transform<T, number>): number;
+
+		Max(selector?: Transform<T, number>): number;
+		Max(selector?: Transform<T, string>): string;
+
+		Min(selector?: Transform<T, number>): number;
+		Min(selector?: Transform<T, string>): string;
+
+		MaxBy(keySelector: Transform<T, number>): T;
+		MaxBy(keySelector: Transform<T, string>): T;
+
+		MinBy(keySelector: Transform<T, number>): T;
+		MinBy(keySelector: Transform<T, string>): T;
 
 		// Paging Methods
 
@@ -238,12 +240,12 @@ declare module LINQ
 		ToArray(): T[];
 
 
-	//BUG**************	ToLookup<K, V>(keySelector: Transform<T, K>): Lookup<K, T>;
+//BUG**************	ToLookup<K, V>(keySelector: Transform<T, K>): Lookup<K, T>;
 		ToLookup<K, V>(keySelector: Transform<T, K>, elementSelector?: Transform<T, V>, compareSelector?: Transform<K, any>): Lookup<K, V>;
 
 		ToObject(keySelector: Transform<T, string>, elementSelector: Transform<T, any>): Object;
 
-	//BUG*****************	ToDictionary<K>(keySelector: Transform<T, K>): Dictionary<K, T>;
+//BUG*****************	ToDictionary<K>(keySelector: Transform<T, K>): Dictionary<K, T>;
 		ToDictionary<K, V>(keySelector: Transform<T, K>, elementSelector?: Transform<T, V>, compareSelector?: Transform<K, any>): Dictionary<K, V>;
 
 		ToJSON(replacer: (key: string, value: any) => string, space?: string): string;
@@ -255,8 +257,8 @@ declare module LINQ
 
 		// Action Methods
 
-		Do(action: ActionX<T>): Enumerable<T>;
-		ForEach(action: (item: T, index: number) => any, context?: Object): void;
+		Do(action: (item: T, index: number) => void ): Enumerable<T>;
+		ForEach(action: (item: T, index: number) => any, thisObject?: Object): void;
 		Write(separator?: string, selector?: Transform<T, any>): void;
 		WriteLine(selector?: Transform<T, any>): void;
 		Force(): void;
@@ -270,7 +272,7 @@ declare module LINQ
 		// Error Handling Methods
 
 		Catch(handler?: (error: any) => void ): Enumerable<T>;
-		Finally(finallyAction?: SimpleAction): Enumerable<T>;
+		Finally(finallyAction?: () => void ): Enumerable<T>;
 
 		// Debug Methods
 
@@ -279,5 +281,5 @@ declare module LINQ
 
 	// Grouping
 
-	export class Grouping<K, T> extends Enumerable<T> {}
+	class Grouping<K, T> extends Enumerable<T> {}
 }
