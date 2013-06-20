@@ -198,8 +198,9 @@ declare module linqjs
 		[x: number]: V;
 	}
 
-	interface Dictionary<K, T>
+	class Dictionary<K, T>
 	{
+		constructor(compareSelector?: (element: K) => any);
 		count(): number;
 		add(key: K, value: T): void;
 		remove(key: K): void;
@@ -210,8 +211,9 @@ declare module linqjs
 		toEnumerable(): IEnumerable<T>;
 	}
 
-	interface Lookup<K, T>
+	class Lookup<K, T>
 	{
+		constructor(dictionary: Dictionary<K, T[]>);
 		count(): number;
 		get(key: K): IEnumerable<T>;
 		contains(key: K): boolean;
@@ -224,40 +226,43 @@ declare module linqjs
 	}
 }
 
-declare var Enumerable:
+declare module Enumerable
 {
-	choice<T>(...params: T[]): linqjs.IEnumerable<T>;
-	choice<T>(params: T[]): linqjs.IEnumerable<T>;
-	choice<T>(params: linqjs.ArrayLike<T>): linqjs.IEnumerable<T>;
+	class Dictionary<K, T> extends linqjs.Dictionary<K, T> {}
+	class Lookup<K, T> extends linqjs.Lookup<K, T> {}
 
-	cycle<T>(...params: T[]): linqjs.IEnumerable<T>;
-	cycle<T>(params: T[]): linqjs.IEnumerable<T>;
-	cycle<T>(params: linqjs.ArrayLike<T>): linqjs.IEnumerable<T>;
+	function choice<T>(...params: T[]): linqjs.IEnumerable <T>;
+	function choice<T>(params: T[]): linqjs.IEnumerable<T>;
+	function choice<T>(params: linqjs.ArrayLike<T>): linqjs.IEnumerable<T>;
 
-	empty<T>(): linqjs.IEnumerable<T>;
+	function cycle<T>(...params: T[]): linqjs.IEnumerable<T>;
+	function cycle<T>(params: T[]): linqjs.IEnumerable<T>;
+	function cycle<T>(params: linqjs.ArrayLike<T>): linqjs.IEnumerable<T>;
 
-	from<T>(): linqjs.IEnumerable<T>;
-	from<T>(obj: linqjs.IEnumerable<T>): linqjs.IEnumerable<T>;
-	from(obj: string): linqjs.IEnumerable<string>;
-	from(obj: number): linqjs.IEnumerable<number>;
-	from<T>(obj: linqjs.ArrayLike<T>): linqjs.IEnumerable<T>;
-	from<T>(obj: { [name: string]: T; }): linqjs.IEnumerable<linqjs.KeyValuePair<string, T>>;
-	from(obj: Object): linqjs.IEnumerable<linqjs.PropertyValue>;
-	from(obj: any): linqjs.IEnumerable<any>;
+	function empty<T>(): linqjs.IEnumerable<T>;
 
-	make<T>(element: T): linqjs.IEnumerable<T>;
+	function from<T>(): linqjs.IEnumerable<T>;
+	function from<T>(obj: linqjs.IEnumerable<T>): linqjs.IEnumerable<T>;
+	function from(obj: string): linqjs.IEnumerable<string>;
+	function from(obj: number): linqjs.IEnumerable<number>;
+	function from<T>(obj: linqjs.ArrayLike<T>): linqjs.IEnumerable<T>;
+	function from<T>(obj: { [name: string]: T; }): linqjs.IEnumerable<linqjs.KeyValuePair<string, T>>;
+	function from(obj: Object): linqjs.IEnumerable<linqjs.PropertyValue>;
+	function from(obj: any): linqjs.IEnumerable<any>;
 
-	matches(input: string, pattern: RegExp): linqjs.IEnumerable<string>;
-	matches(input: string, pattern: string, flags?: string): linqjs.IEnumerable<string>;
+	function make<T>(element: T): linqjs.IEnumerable<T>;
 
-	range(start: number, count: number, step?: number): linqjs.IEnumerable<number>;
-	rangeDown(start: number, count: number, step?: number): linqjs.IEnumerable<number>;
-	rangeTo(start: number, to: number, step?: number): linqjs.IEnumerable<number>;
-	repeat<T>(element: T, count?: number): linqjs.IEnumerable<T>;
-	repeatWithFinalize<T>(initializer: () => T, finalizer: (element: T) => void ): linqjs.IEnumerable<T>;
-	generate<T>(func: () => T, count?: number): linqjs.IEnumerable<T>;
-	toInfinity(start?: number, step?: number): linqjs.IEnumerable<number>;
-	toNegativeInfinity(start?: number, step?: number): linqjs.IEnumerable<number>;
-	unfold<T>(seed: T, func: (value: T) => T): linqjs.IEnumerable<T>;
-	defer<T>(enumerableFactory: () => IEnumerable<T>): linqjs.IEnumerable<T>;
+	function matches(input: string, pattern: RegExp): linqjs.IEnumerable<string>;
+	function matches(input: string, pattern: string, flags?: string): linqjs.IEnumerable<string>;
+
+	function range(start: number, count: number, step?: number): linqjs.IEnumerable<number>;
+	function rangeDown(start: number, count: number, step?: number): linqjs.IEnumerable<number>;
+	function rangeTo(start: number, to: number, step?: number): linqjs.IEnumerable<number>;
+	function repeat<T>(element: T, count?: number): linqjs.IEnumerable<T>;
+	function repeatWithFinalize<T>(initializer: () => T, finalizer: (element: T) => void ): linqjs.IEnumerable<T>;
+	function generate<T>(func: () => T, count?: number): linqjs.IEnumerable<T>;
+	function toInfinity(start?: number, step?: number): linqjs.IEnumerable<number>;
+	function toNegativeInfinity(start?: number, step?: number): linqjs.IEnumerable<number>;
+	function unfold<T>(seed: T, func: (value: T) => T): linqjs.IEnumerable<T>;
+	function defer<T>(enumerableFactory: () => IEnumerable<T>): linqjs.IEnumerable<T>;
 }
