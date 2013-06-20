@@ -51,22 +51,13 @@ _In main.html:_
 <script type="text/javascript" src="lib/main.js"></script>
 ```
 
-_In main.js (AMD-style):_
+_In main.js:_
 
 ```
 /// <reference path="linq3.d.ts" />
 
 import linq = module("linqjs");
 
-var r = linq.from(obj).where(x => ...).orderBy(x => ...).select(x => ...).distinct().toArray();
-```
-
-_In main.js (straight style):_
-
-```
-/// <reference path="linq3.d.ts" />
-
-var linq = Enumerable;
 var r = linq.from(obj).where(x => ...).orderBy(x => ...).select(x => ...).distinct().toArray();
 ```
 
