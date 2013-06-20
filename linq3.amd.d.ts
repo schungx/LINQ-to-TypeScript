@@ -1,6 +1,6 @@
 declare module "linqjs"
 {
-  function choice<T>(...params: T[]): IEnumerable<T>;
+	function choice<T>(...params: T[]): IEnumerable<T>;
 	function choice<T>(params: T[]): IEnumerable<T>;
 	function choice<T>(params: ArrayLike<T>): IEnumerable<T>;
 
@@ -233,8 +233,9 @@ declare module "linqjs"
 		[x: number]: V;
 	}
 
-	interface Dictionary<K, T>
+	class Dictionary<K, T>
 	{
+		constructor(compareSelector?: (element: K) => any);
 		count(): number;
 		add(key: K, value: T): void;
 		remove(key: K): void;
@@ -245,8 +246,9 @@ declare module "linqjs"
 		toEnumerable(): IEnumerable<T>;
 	}
 
-	interface Lookup<K, T>
+	class Lookup<K, T>
 	{
+		constructor(dictionary: Dictionary<K, T[]>);
 		count(): number;
 		get(key: K): IEnumerable<T>;
 		contains(key: K): boolean;
