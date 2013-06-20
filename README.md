@@ -1,9 +1,9 @@
 LINQ-to-TypeScript
 ==================
 
-This project is a translation of the LINQ.js project (LINQ implementation for JavaScript), version 2.2.0.0, into TypeScript.
+This project is a translation of the linq.js project (LINQ implementation for JavaScript), version 2.2.0.0, into TypeScript.
 
-There is also a type definitions file for the new LINQ.js version 3.0 beta.
+There is also a type definitions file for the new linq.js version 3.0 beta.
 
 
 Files
@@ -12,7 +12,7 @@ Files
 - linq.ts     ==> Main implementation
 - linq.d.ts   ==> Type definitions file to shorten compile time
 
-- linq3.d.ts  ==> Type definitions file for version linq.js 3.0 beta (https://linqjs.codeplex.com)
+- linq3.d.ts  ==> Type definitions file for linq.js version 3.0 beta (https://linqjs.codeplex.com)
 
 - linq.js     ==> Compiled JavaScript
 - linq.min.js ==> Compiled JavaScript minified
@@ -47,7 +47,7 @@ Note: Only TypeScript version 0.9+ (with generics support) can be used.
 _In main.html:_
 
 ```
-<script type="text/javascript" src="lib/linq.min.js"></script>
+<script type="text/javascript" src="lib/linq.min.js"></script>     <!-- version 3.0 beta -->
 <script type="text/javascript" src="lib/main.js"></script>
 ```
 
