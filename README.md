@@ -77,27 +77,3 @@ To Compile
 ```
 tsc linq.ts
 ```
-
-
-Notes
------
-
-The current version of TypeScript (0.9) has problems that prevent a generic type referring to or using itself with a type parameter that is a _wrapped_ form of the original type parameter.
-
-As a result, some functions cannot be formulated.  For example:
-
-```
-class Enumerable<T>
-{
-  GroupBy<K>(keySelector: Transform<T, K>): Enumerable<Grouping<K, T>>;
-  BufferWithCount(count: number): Enumerable<T[]>
-  ToLookup<K, V>(keySelector: Transform<T, K>): Lookup<K, T>;
-  ToDictionary<K>(keySelector: Transform<T, K>): Dictionary<K, T>;
-}
-```
-
-```ToLookup``` and ```ToDictionary``` failed to compile because the ```Lookup``` and ```Dictionary``` types each contain a method called ```ToEnumerable``` returning an ```Enumerable<T>```, so this counts as a _wrapped_ form!
-
-Also, **using** ```Dictionary```inside a method implementation causes it to fail to compile as well.
-
-I've changed some method implementations which originally used ```Dictionary``` as a collection to use a new ```Collection``` class (which does not include a ```ToEnumerable``` method) instead.
