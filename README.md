@@ -11,8 +11,8 @@ Files
 - linq3.d.ts  ==> Type definitions file for linq.js version 3.0 beta (https://linqjs.codeplex.com), non-AMD style
 
 
-Usage Example (linq.js version 3.0 beta)
-----------------------------------------
+Usage Example
+-------------
 
 Note: Only TypeScript version 0.9+ (with generics support) can be used.
 
