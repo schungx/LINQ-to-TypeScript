@@ -95,15 +95,15 @@ declare module linqjs
 		shuffle(): IEnumerable < T>;
 		weightedSample(weightSelector: (element: T) => number): IEnumerable < T>;
 
-		//***** BUG IN TypeScript ******groupBy<K>(keySelector: (element: T) => K): IEnumerable<IGrouping<K, T>>;
+		groupBy<K>(keySelector: (element: T) => K): IEnumerable<IGrouping<K, T>>;
 		groupBy<K, V>(keySelector: (element: T) => K, elementSelector: (element: T) => V): IEnumerable < IGrouping < K, V>>;
 		groupBy<K, U, V>(keySelector: (element: T) => K, elementSelector: (element: T) => U, resultSelector: (key: K, group: IGrouping<K, U>) => V, compareSelector?: (element: K) => any): IEnumerable < V>;
 
-		//***** BUG IN TypeScript ******partitionBy<K>(keySelector: (element: T) => K): IEnumerable<IGrouping<K, T>>;
+		partitionBy<K>(keySelector: (element: T) => K): IEnumerable<IGrouping<K, T>>;
 		partitionBy<K, V>(keySelector: (element: T) => K, elementSelector: (element: T) => V): IEnumerable < V>;
 		partitionBy<K, U, V>(keySelector: (element: T) => K, elementSelector: (element: T) => U, resultSelector: (key: K, group: IEnumerable<U>) => V, compareSelector?: (element: K) => any): IEnumerable < V>;
 
-		//***** BUG IN TypeScript ******buffer(count: number): IEnumerable<T[]>;
+		buffer(count: number): IEnumerable<T[]>;
 
 		aggregate<V>(func: (prev: V, current: T) => V): V;
 		aggregate<U, V>(func: (prev: U, current: T) => U, resultSelector?: (last: U) => V): V;
@@ -144,15 +144,16 @@ declare module linqjs
 		indexOf(predicate: (element: T, index: number) => boolean): number;
 		lastIndexOf(item: T): number;
 		lastIndexOf(predicate: (element: T, index: number) => boolean): number;
-		asEnumerable(): IEnumerable < T>;
+		asEnumerable(): IEnumerable <T>;
+		cast<V>(): IEnumerable<V>;
 		toArray(): T[];
 
-		//***** BUG IN TypeScript ******toLookup<K>(keySelector: (element: T) => K): Lookup<K, T>;
+		toLookup<K>(keySelector: (element: T) => K): Lookup<K, T>;
 		toLookup<K, V>(keySelector: (element: T) => K, elementSelector?: (element: T) => V, compareSelector?: (element: K) => any): Lookup < K, V>;
 
-		toObject(keySelector: (element: T) => string, elementSelector?: (element: T) => V): Object;
+		toObject<V>(keySelector: (element: T) => string, elementSelector?: (element: T) => V): Object;
 
-		//***** BUG IN TypeScript ******toDictionary<K>(keySelector: (element: T) => K): Dictionary<K, T>;
+		toDictionary<K>(keySelector: (element: T) => K): Dictionary<K, T>;
 		toDictionary<K, V>(keySelector: (element: T) => K, elementSelector?: (element: T) => V, compareSelector?: (element: K) => any): Dictionary < K, V>;
 
 		toJSONString(replacer: (key: string, value: any) => string, space?: string): string;
@@ -264,5 +265,5 @@ declare module Enumerable
 	function toInfinity(start?: number, step?: number): linqjs.IEnumerable<number>;
 	function toNegativeInfinity(start?: number, step?: number): linqjs.IEnumerable<number>;
 	function unfold<T>(seed: T, func: (value: T) => T): linqjs.IEnumerable<T>;
-	function defer<T>(enumerableFactory: () => IEnumerable<T>): linqjs.IEnumerable<T>;
+	function defer<T>(enumerableFactory: () => linqjs.IEnumerable<T>): linqjs.IEnumerable<T>;
 }
