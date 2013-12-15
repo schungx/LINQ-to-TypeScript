@@ -28,63 +28,67 @@ declare module "linqjs"
 	function rangeDown(start: number, count: number, step?: number): IEnumerable<number>;
 	function rangeTo(start: number, to: number, step?: number): IEnumerable<number>;
 	function repeat<T>(element: T, count?: number): IEnumerable<T>;
-	function repeatWithFinalize<T>(initializer: () => T, finalizer: (element: T) => void ): IEnumerable<T>;
+	function repeatWithFinalize<T>(initializer: () => T, finalizer: Transform<T, void> ): IEnumerable<T>;
 	function generate<T>(func: () => T, count?: number): IEnumerable<T>;
 	function toInfinity(start?: number, step?: number): IEnumerable<number>;
 	function toNegativeInfinity(start?: number, step?: number): IEnumerable<number>;
 	function unfold<T>(seed: T, func: (value: T) => T): IEnumerable<T>;
 	function defer<T>(enumerableFactory: () => IEnumerable<T>): IEnumerable<T>;
 
+	interface NewableClass { new (); }
+	interface Transform<T, V> { (element: T): V; }
+	interface TransformWithIndex<T, V> { (element: T, index?: number): V; }
+
 	interface IEnumerable<T>
 	{
-		traverseBreadthFirst(func: (element: any) => IEnumerable<any>, resultSelector?: (element: any, nestLevel: number) => any): IEnumerable<any>;
-		traverseDepthFirst(func: (element: any) => IEnumerable<any>, resultSelector?: (element: any, nestLevel: number) => any): IEnumerable<any>;
+		traverseBreadthFirst(func: Transform<any, IEnumerable<any>>, resultSelector?: (element: any, nestLevel: number) => any): IEnumerable<any>;
+		traverseDepthFirst(func: Transform<any, IEnumerable<any>>, resultSelector?: (element: any, nestLevel: number) => any): IEnumerable<any>;
 		flatten(): IEnumerable<any>;
 		pairwise<V>(selector: (prev: T, current: T) => V): IEnumerable<V>;
 
 		scan<V>(func: (prev: T, current: T) => V): IEnumerable<V>;
 		scan<V>(seed: V, func: (prev: T, current: T) => V): IEnumerable<V>;
 
-		select<V>(selector: (element: T, index: number) => V): IEnumerable<V>;
+		select<V>(selector: TransformWithIndex<T, V>): IEnumerable<V>;
 
 		selectMany(): IEnumerable<PropertyValue>;
-		selectMany<V>(collectionSelector: (element: T, index: number) => V[]): IEnumerable<V>;
-		selectMany<V>(collectionSelector: (element: T, index: number) => ArrayLike<V>): IEnumerable<V>;
-		selectMany<V>(collectionSelector: (element: T, index: number) => IEnumerable<V>): IEnumerable<V>;
-		selectMany(collectionSelector: (element: T, index: number) => Object): IEnumerable<PropertyValue>;
-		selectMany<U, V>(collectionSelector: (element: T, index: number) => U[], resultSelector: (outer: T, inner: U) => V): IEnumerable<V>;
-		selectMany<U, V>(collectionSelector: (element: T, index: number) => ArrayLike<U>, resultSelector: (outer: T, inner: U) => V): IEnumerable<V>;
-		selectMany<U, V>(collectionSelector: (element: T, index: number) => IEnumerable<U>, resultSelector: (outer: T, inner: U) => V): IEnumerable<V>;
-		selectMany<V>(collectionSelector: (element: T, index: number) => Object, resultSelector: (outer: T, inner: Object) => V): IEnumerable<V>;
+		selectMany<V>(collectionSelector: TransformWithIndex<T, V[]>): IEnumerable<V>;
+		selectMany<V>(collectionSelector: TransformWithIndex<T, ArrayLike<V>>): IEnumerable<V>;
+		selectMany<V>(collectionSelector: TransformWithIndex<T, IEnumerable<V>>): IEnumerable<V>;
+		selectMany(collectionSelector: TransformWithIndex<T, Object>): IEnumerable<PropertyValue>;
+		selectMany<U, V>(collectionSelector: TransformWithIndex<T, U[]>, resultSelector: (outer: T, inner: U) => V): IEnumerable<V>;
+		selectMany<U, V>(collectionSelector: TransformWithIndex<T, ArrayLike<U>>, resultSelector: (outer: T, inner: U) => V): IEnumerable<V>;
+		selectMany<U, V>(collectionSelector: TransformWithIndex<T, IEnumerable<U>>, resultSelector: (outer: T, inner: U) => V): IEnumerable<V>;
+		selectMany<V>(collectionSelector: TransformWithIndex<T, Object>, resultSelector: (outer: T, inner: Object) => V): IEnumerable<V>;
 
-		where(predicate: (element: T, index: number) => boolean): IEnumerable<T>;
-		choose<V>(selector: (element: T, index: number) => V): IEnumerable<V>;
-		ofType<V extends Function>(type: V): IEnumerable<V>;
+		where(predicate: TransformWithIndex<T, boolean>): IEnumerable<T>;
+		choose<V>(selector: TransformWithIndex<T, V>): IEnumerable<V>;
+		ofType<V extends NewableClass>(type: V): IEnumerable<V>;
 
-		zip<U, V>(second: U[], resultSelector: (first: T, second: U, index: number) => V): IEnumerable<V>;
-		zip<U, V>(second: ArrayLike<U>, resultSelector: (first: T, second: U, index: number) => V): IEnumerable<V>;
-		zip<U, V>(second: IEnumerable<U>, resultSelector: (first: T, second: U, index: number) => V): IEnumerable<V>;
-		zip<V>(second: Object, resultSelector: (first: T, second: PropertyValue, index: number) => V): IEnumerable<V>;
+		zip<U, V>(second: U[], resultSelector: (first: T, second: U, index?: number) => V): IEnumerable<V>;
+		zip<U, V>(second: ArrayLike<U>, resultSelector: (first: T, second: U, index?: number) => V): IEnumerable<V>;
+		zip<U, V>(second: IEnumerable<U>, resultSelector: (first: T, second: U, index?: number) => V): IEnumerable<V>;
+		zip<V>(second: Object, resultSelector: (first: T, second: PropertyValue, index?: number) => V): IEnumerable<V>;
 		zip(...params: any[]): IEnumerable<any>; // last one is selector
-		
-		merge<U, V>(second: U[], resultSelector: (first: T, second: U, index: number) => V): IEnumerable<V>;
-		merge<U, V>(second: IEnumerable<U>, resultSelector: (first: T, second: U, index: number) => V): IEnumerable<V>;
-		merge<U, V>(second: ArrayLike<U>, resultSelector: (first: T, second: U, index: number) => V): IEnumerable<V>;
-		merge<V>(second: Object, resultSelector: (first: T, second: PropertyValue, index: number) => V): IEnumerable<V>;
+
+		merge<U, V>(second: U[], resultSelector: (first: T, second: U, index?: number) => V): IEnumerable<V>;
+		merge<U, V>(second: IEnumerable<U>, resultSelector: (first: T, second: U, index?: number) => V): IEnumerable<V>;
+		merge<U, V>(second: ArrayLike<U>, resultSelector: (first: T, second: U, index?: number) => V): IEnumerable<V>;
+		merge<V>(second: Object, resultSelector: (first: T, second: PropertyValue, index?: number) => V): IEnumerable<V>;
 		merge(...params: any[]): IEnumerable<any>; // last one is selector
 
-		join<K, U, V>(inner: U[], outerKeySelector: (outer: T) => K, innerKeySelector: (inner: U) => K, resultSelector: (outer: T, inner: U) => V, compareSelector?: (obj: K) => any): IEnumerable<V>;
-		join<K, U, V>(inner: ArrayLike<U>, outerKeySelector: (outer: T) => K, innerKeySelector: (inner: U) => K, resultSelector: (outer: T, inner: U) => V, compareSelector?: (obj: K) => any): IEnumerable<V>;
-		join<K, U, V>(inner: IEnumerable<U>, outerKeySelector: (outer: T) => K, innerKeySelector: (inner: U) => K, resultSelector: (outer: T, inner: U) => V, compareSelector?: (obj: K) => any): IEnumerable<V>;
-		join<K, V>(inner: Object, outerKeySelector: (outer: T) => K, innerKeySelector: (inner: PropertyValue) => K, resultSelector: (outer: T, inner: PropertyValue) => V, compareSelector?: (obj: K) => any): IEnumerable<V>;
+		join<K, U, V>(inner: U[], outerKeySelector: Transform<T, K>, innerKeySelector: Transform<U, K>, resultSelector: (outer: T, inner: U) => V, compareSelector?: Transform<K, any>): IEnumerable<V>;
+		join<K, U, V>(inner: ArrayLike<U>, outerKeySelector: Transform<T, K>, innerKeySelector: Transform<U, K>, resultSelector: (outer: T, inner: U) => V, compareSelector?: Transform<K, any>): IEnumerable<V>;
+		join<K, U, V>(inner: IEnumerable<U>, outerKeySelector: Transform<T, K>, innerKeySelector: Transform<U, K>, resultSelector: (outer: T, inner: U) => V, compareSelector?: Transform<K, any>): IEnumerable<V>;
+		join<K, V>(inner: Object, outerKeySelector: Transform<T, K>, innerKeySelector: (inner: PropertyValue) => K, resultSelector: (outer: T, inner: PropertyValue) => V, compareSelector?: Transform<K, any>): IEnumerable<V>;
 
-		groupJoin<K, U, V>(inner: U[], outerKeySelector: (outer: T) => K, innerKeySelector: (inner: U) => K, resultSelector: (outer: T, inner: U) => V, compareSelector?: (obj: K) => any): IEnumerable<V>;
-		groupJoin<K, U, V>(inner: ArrayLike<U>, outerKeySelector: (outer: T) => K, innerKeySelector: (inner: U) => K, resultSelector: (outer: T, inner: U) => V, compareSelector?: (obj: K) => any): IEnumerable<V>;
-		groupJoin<K, U, V>(inner: IEnumerable<U>, outerKeySelector: (outer: T) => K, innerKeySelector: (inner: U) => K, resultSelector: (outer: T, inner: U) => V, compareSelector?: (obj: K) => any): IEnumerable<V>;
-		groupJoin<K, V>(inner: Object, outerKeySelector: (outer: T) => K, innerKeySelector: (inner: PropertyValue) => K, resultSelector: (outer: T, inner: PropertyValue) => V, compareSelector?: (obj: K) => any): IEnumerable<V>;
-		
-		all(predicate: (element: T) => boolean): boolean;
-		any(predicate?: (element: T) => boolean): boolean;
+		groupJoin<K, U, V>(inner: U[], outerKeySelector: Transform<T, K>, innerKeySelector: Transform<U, K>, resultSelector: (outer: T, inner: U) => V, compareSelector?: Transform<K, any>): IEnumerable<V>;
+		groupJoin<K, U, V>(inner: ArrayLike<U>, outerKeySelector: Transform<T, K>, innerKeySelector: Transform<U, K>, resultSelector: (outer: T, inner: U) => V, compareSelector?: Transform<K, any>): IEnumerable<V>;
+		groupJoin<K, U, V>(inner: IEnumerable<U>, outerKeySelector: Transform<T, K>, innerKeySelector: Transform<U, K>, resultSelector: (outer: T, inner: U) => V, compareSelector?: Transform<K, any>): IEnumerable<V>;
+		groupJoin<K, V>(inner: Object, outerKeySelector: Transform<T, K>, innerKeySelector: (inner: PropertyValue) => K, resultSelector: (outer: T, inner: PropertyValue) => V, compareSelector?: Transform<K, any>): IEnumerable<V>;
+
+		all(predicate: Transform<T, boolean>): boolean;
+		any(predicate?: Transform<T, boolean>): boolean;
 		isEmpty(): boolean;
 
 		concat(...sequences: T[]): IEnumerable<T>;
@@ -102,109 +106,110 @@ declare module "linqjs"
 		alternate(alternateSequence: IEnumerable<T>): IEnumerable<T>;
 
 		contains(value: T): boolean;
-		contains<V>(value: V, compareSelector: (element: T) => V): boolean;
+		contains<V>(value: V, compareSelector: Transform<T, V>): boolean;
 
 		defaultIfEmpty(defaultValue?: T): IEnumerable<T>;
-		distinct(compareSelector?: (element: T) => any): IEnumerable<T>;
-		distinctUntilChanged(compareSelector: (element: T) => any): IEnumerable<T>;
+		distinct(compareSelector?: Transform<T, any>): IEnumerable<T>;
+		distinctUntilChanged(compareSelector: Transform<T, any>): IEnumerable<T>;
 
-		except(second: T[], compareSelector?: (element: T) => any): IEnumerable<T>;
-		except(second: ArrayLike<T>, compareSelector?: (element: T) => any): IEnumerable<T>;
-		except(second: IEnumerable<T>, compareSelector?: (element: T) => any): IEnumerable<T>;
+		except(second: T[], compareSelector?: Transform<T, any>): IEnumerable<T>;
+		except(second: ArrayLike<T>, compareSelector?: Transform<T, any>): IEnumerable<T>;
+		except(second: IEnumerable<T>, compareSelector?: Transform<T, any>): IEnumerable<T>;
 
-		intersect(second: T[], compareSelector?: (element: T) => any): IEnumerable<T>;
-		intersect(second: ArrayLike<T>, compareSelector?: (element: T) => any): IEnumerable<T>;
-		intersect(second: IEnumerable<T>, compareSelector?: (element: T) => any): IEnumerable<T>;
+		intersect(second: T[], compareSelector?: Transform<T, any>): IEnumerable<T>;
+		intersect(second: ArrayLike<T>, compareSelector?: Transform<T, any>): IEnumerable<T>;
+		intersect(second: IEnumerable<T>, compareSelector?: Transform<T, any>): IEnumerable<T>;
 
-		sequenceEqual(second: T[], compareSelector?: (element: T) => any): IEnumerable<T>;
-		sequenceEqual(second: ArrayLike<T>, compareSelector?: (element: T) => any): IEnumerable<T>;
-		sequenceEqual(second: IEnumerable<T>, compareSelector?: (element: T) => any): IEnumerable<T>;
+		sequenceEqual(second: T[], compareSelector?: Transform<T, any>): IEnumerable<T>;
+		sequenceEqual(second: ArrayLike<T>, compareSelector?: Transform<T, any>): IEnumerable<T>;
+		sequenceEqual(second: IEnumerable<T>, compareSelector?: Transform<T, any>): IEnumerable<T>;
 
-		union(second: T[], compareSelector?: (element: T) => any): IEnumerable<T>;
-		union(second: ArrayLike<T>, compareSelector?: (element: T) => any): IEnumerable<T>;
-		union(second: IEnumerable<T>, compareSelector?: (element: T) => any): IEnumerable<T>;
+		union(second: T[], compareSelector?: Transform<T, any>): IEnumerable<T>;
+		union(second: ArrayLike<T>, compareSelector?: Transform<T, any>): IEnumerable<T>;
+		union(second: IEnumerable<T>, compareSelector?: Transform<T, any>): IEnumerable<T>;
 
-		orderBy(keySelector: (element: T) => any): IEnumerable<T>;
-		orderByDescending(keySelector: (element: T) => any): IEnumerable<T>;
+		orderBy(keySelector: Transform<T, any>): IEnumerable<T>;
+		orderByDescending(keySelector: Transform<T, any>): IEnumerable<T>;
 		reverse(): IEnumerable<T>;
 		shuffle(): IEnumerable<T>;
-		weightedSample(weightSelector: (element: T) => number): IEnumerable<T>;
+		weightedSample(weightSelector: Transform<T, number>): IEnumerable<T>;
 
-//***** BUG IN TypeScript ******groupBy<K>(keySelector: (element: T) => K): IEnumerable<IGrouping<K, T>>;
-		groupBy<K, V>(keySelector: (element: T) => K, elementSelector: (element: T) => V): IEnumerable<IGrouping<K, V>>;
-		groupBy<K, U, V>(keySelector: (element: T) => K, elementSelector: (element: T) => U, resultSelector: (key: K, group: IGrouping<K, U>) => V, compareSelector?: (element: K) => any): IEnumerable<V>;
+		groupBy<K>(keySelector: Transform<T, K>): IEnumerable<IGrouping<K, T>>;
+		groupBy<K, V>(keySelector: Transform<T, K>, elementSelector: Transform<T, V>): IEnumerable<IGrouping<K, V>>;
+		groupBy<K, U, V>(keySelector: Transform<T, K>, elementSelector: (element: T) => U, resultSelector: (key: K, group: IGrouping<K, U>) => V, compareSelector?: Transform<K, any>): IEnumerable<V>;
 
-//***** BUG IN TypeScript ******partitionBy<K>(keySelector: (element: T) => K): IEnumerable<IGrouping<K, T>>;
-		partitionBy<K, V>(keySelector: (element: T) => K, elementSelector: (element: T) => V): IEnumerable<V>;
-		partitionBy<K, U, V>(keySelector: (element: T) => K, elementSelector: (element: T) => U, resultSelector: (key: K, group: IEnumerable<U>) => V, compareSelector?: (element: K) => any): IEnumerable<V>;
+		partitionBy<K>(keySelector: Transform<T, K>): IEnumerable<IGrouping<K, T>>;
+		partitionBy<K, V>(keySelector: Transform<T, K>, elementSelector: Transform<T, V>): IEnumerable<V>;
+		partitionBy<K, U, V>(keySelector: Transform<T, K>, elementSelector: (element: T) => U, resultSelector: (key: K, group: IEnumerable<U>) => V, compareSelector?: Transform<K, any>): IEnumerable<V>;
 
-//***** BUG IN TypeScript ******buffer(count: number): IEnumerable<T[]>;
+		buffer(count: number): IEnumerable<T[]>;
 
 		aggregate<V>(func: (prev: V, current: T) => V): V;
-		aggregate<U, V>(func: (prev: U, current: T) => U, resultSelector?: (last: U) => V): V;
+		aggregate<U, V>(func: (prev: U, current: T) => U, resultSelector?: Transform<U, V>): V;
 		aggregate<V>(seed: V, func: (prev: V, current: T) => V): V;
-		aggregate<U, V>(seed: U, func: (prev: U, current: T) => U, resultSelector?: (last: U) => V): V;
+		aggregate<U, V>(seed: U, func: (prev: U, current: T) => U, resultSelector?: Transform<U, V>): V;
 
-		average(selector?: (element: T) => number): number;
-		sum(selector?: (element: T) => number): number;
-		count(predicate?: (element: T, index: number) => boolean): number;
+		average(selector?: Transform<T, number>): number;
+		sum(selector?: Transform<T, number>): number;
+		count(predicate?: TransformWithIndex<T, boolean>): number;
 
-		max(selector?: (element: T) => number): number;
-		max(selector?: (element: T) => string): string;
+		max(selector?: Transform<T, number>): number;
+		max(selector?: Transform<T, string>): string;
 
-		min(selector?: (element: T) => number): number;
-		min(selector?: (element: T) => string): string;
+		min(selector?: Transform<T, number>): number;
+		min(selector?: Transform<T, string>): string;
 
-		maxBy(keySelector: (element: T) => number): T;
-		maxBy(keySelector: (element: T) => string): T;
+		maxBy(keySelector: Transform<T, number>): T;
+		maxBy(keySelector: Transform<T, string>): T;
 
-		minBy(keySelector: (element: T) => number): T;
-		minBy(keySelector: (element: T) => string): T;
+		minBy(keySelector: Transform<T, number>): T;
+		minBy(keySelector: Transform<T, string>): T;
 
 		elementAt(index: number): T;
 		elementAtOrDefault(index: number, defaultValue?: T): T;
-		first(predicate?: (element: T, index: number) => boolean): T;
-		firstOrDefault(predicate?: (element: T, index: number) => boolean, defaultValue?: T): T;
-		last(predicate?: (element: T, index: number) => boolean): T;
-		lastOrDefault(predicate?: (element: T, index: number) => boolean, defaultValue?: T): T;
-		single(predicate?: (element: T, index: number) => boolean): T;
-		singleOrDefault(predicate?: (element: T, index: number) => boolean, defaultValue?: T): T;
+		first(predicate?: TransformWithIndex<T, boolean>): T;
+		firstOrDefault(predicate?: TransformWithIndex<T, boolean>, defaultValue?: T): T;
+		last(predicate?: TransformWithIndex<T, boolean>): T;
+		lastOrDefault(predicate?: TransformWithIndex<T, boolean>, defaultValue?: T): T;
+		single(predicate?: TransformWithIndex<T, boolean>): T;
+		singleOrDefault(predicate?: TransformWithIndex<T, boolean>, defaultValue?: T): T;
 		skip(count: number): IEnumerable<T>;
-		skipWhile(predicate: (element: T, index: number) => boolean): IEnumerable<T>;
+		skipWhile(predicate: TransformWithIndex<T, boolean>): IEnumerable<T>;
 		take(count: number): IEnumerable<T>;
-		takeWhile(predicate: (element: T, index: number) => boolean): IEnumerable<T>;
+		takeWhile(predicate: TransformWithIndex<T, boolean>): IEnumerable<T>;
 		takeExceptLast(count?: number): IEnumerable<T>;
 		takeFromLast(count: number): IEnumerable<T>;
 		indexOf(item: T): number;
-		indexOf(predicate: (element: T, index: number) => boolean): number;
+		indexOf(predicate: TransformWithIndex<T, boolean>): number;
 		lastIndexOf(item: T): number;
-		lastIndexOf(predicate: (element: T, index: number) => boolean): number;
+		lastIndexOf(predicate: TransformWithIndex<T, boolean>): number;
 		asEnumerable(): IEnumerable<T>;
+		cast<V>(): IEnumerable<V>;
 		toArray(): T[];
 
-//***** BUG IN TypeScript ******toLookup<K>(keySelector: (element: T) => K): Lookup<K, T>;
-		toLookup<K, V>(keySelector: (element: T) => K, elementSelector?: (element: T) => V, compareSelector?: (element: K) => any): Lookup<K, V>;
+		toLookup<K>(keySelector: Transform<T, K>): Lookup<K, T>;
+		toLookup<K, V>(keySelector: Transform<T, K>, elementSelector?: Transform<T, V>, compareSelector?: Transform<K, any>): Lookup<K, V>;
 
-		toObject(keySelector: (element: T) => string, elementSelector?: (element: T) => V): Object;
+		toObject<V>(keySelector: Transform<T, string>, elementSelector?: Transform<T, V>): Object;
 
-//***** BUG IN TypeScript ******toDictionary<K>(keySelector: (element: T) => K): Dictionary<K, T>;
-		toDictionary<K, V>(keySelector: (element: T) => K, elementSelector?: (element: T) => V, compareSelector?: (element: K) => any): Dictionary<K, V>;
+		toDictionary<K>(keySelector: Transform<T, K>): Dictionary<K, T>;
+		toDictionary<K, V>(keySelector: Transform<T, K>, elementSelector?: Transform<T, V>, compareSelector?: Transform<K, any>): Dictionary<K, V>;
 
-		toJSONString(replacer: (key: string, value: any) => string, space?: string): string;
+		toJSONString(replacer: TransformWithIndex<T, string>, space?: string): string;
 		toJSONString(replacer: string[], space?: string): string;
-		toJSONString(replacer: (key: string, value: any) => string, space?: number): string;
+		toJSONString(replacer: TransformWithIndex<T, string>, space?: number): string;
 		toJSONString(replacer: string[], space?: number): string;
 
-		toJoinedString(separator?: string, selector?: (element: T, index: number) => any): string;
+		toJoinedString(separator?: string, selector?: TransformWithIndex<T, any>): string;
 
-		doAction(action: (element: T, index: number) => void ): IEnumerable<T>;
-		doAction(action: (element: T, index: number) => boolean): IEnumerable<T>;
+		doAction(action: TransformWithIndex<T, void>): IEnumerable<T>;
+		doAction(action: TransformWithIndex<T, boolean>): IEnumerable<T>;
 
-		forEach(action: (element: T, index: number) => void ): void;
-		forEach(action: (element: T, index: number) => boolean): void;
+		forEach(action: TransformWithIndex<T, void>): void;
+		forEach(action: TransformWithIndex<T, boolean>): void;
 
-		write(separator?: string, selector?: (element: T) => any): void;
-		writeLine(selector?: (element: T) => any): void;
+		write(separator?: string, selector?: Transform<T, any>): void;
+		writeLine(selector?: Transform<T, any>): void;
 		force(): void;
 
 		letBind<V>(func: (source: IEnumerable<T>) => V[]): IEnumerable<V>;
@@ -213,10 +218,10 @@ declare module "linqjs"
 
 		share(): IEnumerable<T>;
 		memoize(): IEnumerable<T>;
-		catchError(handler: (exception: any) => void ): IEnumerable<T>;
-		finallyAction(finallyAction: () => void ): IEnumerable<T>;
-		log(selector?: (element: T) => void ): IEnumerable<T>;
-		trace(message?: string, selector?: (element: T) => void ): IEnumerable<T>;
+		catchError(handler: (exception: any) => void): IEnumerable<T>;
+		finallyAction(finallyAction: () => void): IEnumerable<T>;
+		log(selector?: Transform<T, void>): IEnumerable<T>;
+		trace(message?: string, selector?: Transform<T, void>): IEnumerable<T>;
 	}
 
 	interface KeyValuePair<K, V>
@@ -235,7 +240,7 @@ declare module "linqjs"
 
 	class Dictionary<K, T>
 	{
-		constructor(compareSelector?: (element: K) => any);
+		constructor(compareSelector?: Transform<K, any>);
 		count(): number;
 		add(key: K, value: T): void;
 		remove(key: K): void;
